@@ -85,7 +85,12 @@ export default function IaPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ messages: [{ role: 'user', content: teste }] }),
     }).then((r) => r.json());
-    setResposta(r.ok ? `(${r.step}${r.model ? ' · ' + r.model : ''}) ${r.reply}` : 'Erro: ' + r.error);
+    if (r.ok) {
+      const erroCascata = r.cascadeError ? `  ⚠️ Falha nos modelos: ${r.cascadeError}` : '';
+      setResposta(`(${r.step}${r.model ? ' · ' + r.model : ''}) ${r.reply}${erroCascata}`);
+    } else {
+      setResposta('Erro: ' + r.error);
+    }
   }
 
   return (

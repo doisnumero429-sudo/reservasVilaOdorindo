@@ -244,7 +244,7 @@ ${cardapioTxt}`;
 
     const logId = await logAi(db, restaurant.id, sessionId, userMessage, reply, result.model, result.step, result.inputTokens || 0, result.outputTokens || 0, result.latencyMs, result.fallbackUsed);
 
-    return NextResponse.json({ ok: true, reply, step: result.step, model: result.model, reservation, log_id: logId });
+    return NextResponse.json({ ok: true, reply, step: result.step, model: result.model, reservation, log_id: logId, cascadeError: result.error || null });
   } catch (err: any) {
     return NextResponse.json({ ok: false, error: String(err?.message || err) }, { status: 500 });
   }
