@@ -100,7 +100,22 @@ export default function IaPage() {
             <label className="adm-label">Limite de custo (USD)</label>
             <input className="adm-input" type="number" value={a.cascade_config.cost_limit_usd || 5} onChange={(e) => setCascade('cost_limit_usd', Number(e.target.value))} />
           </div>
+          <div>
+            <label className="adm-label">Limite de chamadas por dia</label>
+            <input className="adm-input" type="number" value={a.cascade_config.daily_call_limit ?? 900} onChange={(e) => setCascade('daily_call_limit', Number(e.target.value))} />
+          </div>
+          <div>
+            <label className="adm-label">Limite por minuto</label>
+            <input className="adm-input" type="number" value={a.cascade_config.per_minute_limit ?? 18} onChange={(e) => setCascade('per_minute_limit', Number(e.target.value))} />
+          </div>
         </div>
+        <label style={{ display: 'block', marginTop: 10 }}>
+          <input type="checkbox" checked={a.cascade_config.cache_enabled !== false} onChange={(e) => setCascade('cache_enabled', e.target.checked)} /> Cache de respostas frequentes (economiza requisições)
+        </label>
+        <p className="adm-sub" style={{ marginTop: 6 }}>
+          Dica: o modelo da etapa 1 pode ser um modelo grátis da OpenRouter (nome terminando em <b>:free</b>).
+          O grátis tem limites (≈20/min e 50/dia, ou 1000/dia com US$ 10 em créditos). Os limites acima protegem você.
+        </p>
       </div>
 
       <div className="adm-card">

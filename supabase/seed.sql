@@ -58,18 +58,22 @@ begin
   select rid, 'Villa Grill'
   where not exists (select 1 from public.email_settings where restaurant_id = rid);
 
-  -- ---- 5. Configurações da IA (Lorena) + cascata OpenRouter ----------
-  -- Por padrão a Lorena começa no modo GRÁTIS (regras locais, sem custo de IA).
-  -- Troque para 'hibrido' ou 'openrouter' na tela /admin/ia quando quiser ativar a IA paga.
+  -- ---- 5. Configurações da IA (Lorena) — cascata GRÁTIS-PRIMEIRO ------
+  -- Etapa 1: modelo GRÁTIS da OpenRouter (:free). Etapas 2/3: pagos (só se o
+  -- grátis falhar). 'cheap_model' abaixo é grátis; confirme o nome na lista
+  -- atual em openrouter.ai/models (filtro :free) e ajuste em /admin/ia se preciso.
   insert into public.ai_settings
     (restaurant_id, enabled, mode, cascade_config, fallback_message, human_transfer_message)
-  select rid, true, 'local',
+  select rid, true, 'hibrido',
     jsonb_build_object(
-      'cheap_model',  'openai/gpt-4o-mini',
-      'mid_model',    'openai/gpt-4o-mini',
-      'strong_model', 'openai/gpt-4o',
-      'timeout_ms',   12000,
-      'cost_limit_usd', 5
+      'cheap_model',      'meta-llama/llama-3.3-70b-instruct:free',
+      'mid_model',        'openai/gpt-4o-mini',
+      'strong_model',     'openai/gpt-4o',
+      'timeout_ms',       15000,
+      'cost_limit_usd',   5,
+      'cache_enabled',    true,
+      'daily_call_limit', 900,
+      'per_minute_limit', 18
     ),
     'Vou confirmar essa informação com a nossa equipe e já te retorno, tá? 🙏',
     'Posso te encaminhar para um atendente humano agora pelo WhatsApp.'
