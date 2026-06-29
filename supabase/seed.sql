@@ -130,7 +130,8 @@ begin
   values
     (rid, 'atendimento_humano', '"11h às 14h e 17h às 23h59"'::jsonb),
     (rid, 'prazo_retorno', '"até 60 minutos"'::jsonb),
-    (rid, 'reclamacao_prazo', '"até 24 horas"'::jsonb)
+    (rid, 'reclamacao_prazo', '"até 24 horas"'::jsonb),
+    (rid, 'delivery_url', '"https://villa-grill-restaurante.goomer.app/"'::jsonb)
   on conflict (restaurant_id, key) do nothing;
 
 end $$;

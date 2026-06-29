@@ -23,7 +23,7 @@ export default function CardapioPage() {
 
   const carregarItens = useCallback(async () => {
     if (!catSel) return;
-    const { data } = await supabase.from('menu_items').select('*').eq('category_id', catSel).order('sort_order');
+    const { data } = await supabase.from('menu_items').select('*, image:assets(public_url)').eq('category_id', catSel).order('sort_order');
     setItens(data || []);
   }, [supabase, catSel]);
 
@@ -35,9 +35,21 @@ export default function CardapioPage() {
     const n = [...itens]; n[i] = { ...n[i], [campo]: valor }; setItens(n);
   }
   async function salvarItem(it: any) {
-    const { id, restaurant_id, category_id, created_at, updated_at, image_asset_id, tags, allergens, accompaniments, ...rest } = it;
+    const { id, restaurant_id, category_id, created_at, updated_at, image_asset_id, image, tags, allergens, accompaniments, ...rest } = it;
     await supabase.from('menu_items').update({ ...rest, price: it.price === '' ? null : Number(it.price) }).eq('id', id);
     flash('Item salvo.');
+  }
+  async function enviarFoto(it: any, file: File) {
+    if (!rid) return;
+    const ext = file.name.split('.').pop() || 'png';
+    const path = `${rid}/menu/${it.id}-${Date.now()}.${ext}`;
+    const up = await supabase.storage.from('assets').upload(path, file, { upsert: true });
+    if (up.error) { flash('Erro ao enviar foto: ' + up.error.message); return; }
+    const { data: pub } = supabase.storage.from('assets').getPublicUrl(path);
+    const { data: asset } = await supabase.from('assets').insert({ restaurant_id: rid, type: 'menu_item', name: it.name, storage_path: path, public_url: pub.publicUrl }).select().single();
+    if (asset) await supabase.from('menu_items').update({ image_asset_id: asset.id }).eq('id', it.id);
+    flash('Foto salva.');
+    carregarItens();
   }
   async function addItem() {
     if (!rid || !catSel) return;
@@ -89,6 +101,14 @@ export default function CardapioPage() {
                   <td><input type="checkbox" checked={!!it.active} onChange={(e) => up(i, 'active', e.target.checked)} /></td>
                   <td>
                     <div className="adm-row" style={{ gap: 6 }}>
+                      {it.image?.public_url && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={it.image.public_url} alt="foto" style={{ width: 34, height: 34, borderRadius: 6, objectFit: 'cover' }} />
+                      )}
+                      <label className="adm-btn sm" style={{ cursor: 'pointer' }} title="Enviar foto do item">
+                        📷
+                        <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) enviarFoto(it, f); e.target.value = ''; }} />
+                      </label>
                       <button className="adm-btn sm gold" onClick={() => salvarItem(it)}>Salvar</button>
                       <button className="adm-btn sm" onClick={() => removerItem(it.id)}>×</button>
                     </div>

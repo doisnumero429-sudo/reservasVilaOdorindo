@@ -13,6 +13,7 @@ export default function ConfiguracoesPage() {
   const [rest, setRest] = useState<any>(null);
   const [rules, setRules] = useState<any>(null);
   const [sectors, setSectors] = useState<any[]>([]);
+  const [deliveryUrl, setDeliveryUrl] = useState('');
   const [msg, setMsg] = useState('');
 
   const carregar = useCallback(async () => {
@@ -24,6 +25,8 @@ export default function ConfiguracoesPage() {
       setRules(rl || { restaurant_id: r.id });
       const { data: sec } = await supabase.from('sectors').select('*').eq('restaurant_id', r.id).order('sort_order');
       setSectors(sec || []);
+      const { data: ds } = await supabase.from('restaurant_settings').select('value').eq('restaurant_id', r.id).eq('key', 'delivery_url').maybeSingle();
+      setDeliveryUrl(typeof ds?.value === 'string' ? ds.value : '');
     }
   }, [supabase]);
 
@@ -39,6 +42,7 @@ export default function ConfiguracoesPage() {
   async function salvarUnidade() {
     const { id, created_at, updated_at, ...rest2 } = rest;
     await supabase.from('restaurants').update(rest2).eq('id', id);
+    if (rid) await supabase.from('restaurant_settings').upsert({ restaurant_id: rid, key: 'delivery_url', value: deliveryUrl }, { onConflict: 'restaurant_id,key' });
     flash('Dados da unidade salvos.');
   }
 
@@ -111,6 +115,8 @@ export default function ConfiguracoesPage() {
             </div>
           ))}
         </div>
+        <label className="adm-label">Link do cardápio / delivery (Goomer) — a Lorena indica este link para pedidos</label>
+        <input className="adm-input" value={deliveryUrl} onChange={(e) => setDeliveryUrl(e.target.value)} placeholder="https://villa-grill-restaurante.goomer.app/" />
         <div style={{ marginTop: 14 }}>
           <button className="adm-btn gold" onClick={salvarUnidade}>Salvar dados da unidade</button>
         </div>

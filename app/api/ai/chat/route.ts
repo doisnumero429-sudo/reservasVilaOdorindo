@@ -37,13 +37,20 @@ export async function POST(req: NextRequest) {
     const hojeISO = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
     const diaSemana = new Intl.DateTimeFormat('pt-BR', { timeZone: tz, weekday: 'long' }).format(new Date());
 
-    const [{ data: ai }, { data: rules }, { data: sectors }, { data: events }, { data: blocks }] = await Promise.all([
+    const [{ data: ai }, { data: rules }, { data: sectors }, { data: events }, { data: blocks }, { data: highlights }] = await Promise.all([
       db.from('ai_settings').select('*').eq('restaurant_id', restaurant.id).maybeSingle(),
       db.from('reservation_rules').select('*').eq('restaurant_id', restaurant.id).maybeSingle(),
       db.from('sectors').select('code,public_name,active,allow_reservation').eq('restaurant_id', restaurant.id).eq('active', true).order('sort_order'),
       db.from('special_events').select('title,event_date,public_message,block_reservations,active').eq('restaurant_id', restaurant.id).eq('active', true).gte('event_date', hojeISO),
       db.from('reservation_blocks').select('block_date,period,public_message').eq('restaurant_id', restaurant.id).gte('block_date', hojeISO).order('block_date'),
+      db.from('menu_items').select('name,featured,image:assets(public_url)').eq('restaurant_id', restaurant.id).eq('active', true).or('featured.eq.true,image_asset_id.not.is.null'),
     ]);
+
+    // destaques (mais pedidos) e mapa de fotos (nome -> URL real, para não inventar link)
+    const photoMap = new Map<string, string>();
+    (highlights || []).forEach((h: any) => { const u = h.image?.public_url; if (u) photoMap.set(norm(h.name), u); });
+    const featuredTxt = (highlights || []).filter((h: any) => h.featured).map((h: any) => h.name).join(', ');
+    const comFoto = (highlights || []).filter((h: any) => h.image?.public_url).map((h: any) => h.name).join(', ');
 
     const cfg = ai?.cascade_config || {};
 
@@ -108,6 +115,14 @@ export async function POST(req: NextRequest) {
       `Você é a Lorena, atendente virtual do ${restaurant.name}. Fala como atendente brasileira simpática, mensagens curtas estilo WhatsApp. Use emoji com moderação.
 NUNCA invente preço, prato, horário ou disponibilidade — use só os dados fornecidos. Não prometa desconto. Quando não souber, diga que confirma com a equipe.`;
 
+    const comportamento = `
+SEU PAPEL: você DEMONSTRA e informa — você NÃO vende e NÃO tira pedidos nem faz delivery.
+- Quando o cliente quiser PEDIR, COMPRAR ou pedir DELIVERY, oriente com simpatia e termine a mensagem com o token [BOTAO_DELIVERY] (cardápio online oficial). Nunca pressione a comprar.
+- Você ajuda a pessoa a decidir tirando dúvidas (o que é o prato, o que acompanha, preço). A compra é sempre no cardápio online.
+DESTAQUES / MAIS PEDIDOS: ${featuredTxt || '— (nenhum marcado)'}.
+FOTOS: para um prato com foto disponível, você PODE mostrar a imagem incluindo numa linha própria exatamente assim: [[FOTO:Nome exato do prato]] (use só o nome; eu insiro a foto). Não invente URLs.
+Pratos com foto disponível: ${comFoto || 'nenhum no momento'}.`;
+
     const protocoloReserva = `
 VOCÊ PODE FAZER A RESERVA PELO CHAT. Para isso, colete naturalmente, um de cada vez:
 1) nome, 2) WhatsApp (com DDD), 3) data, 4) período (almoço ou noite), 5) horário, 6) número de pessoas, 7) setor de preferência.
@@ -137,7 +152,7 @@ ${eventosTxt}
 ${cardapioTxt}`;
 
     const messages: ChatMessage[] = [
-      { role: 'system', content: baseInstrucoes + '\n' + protocoloReserva },
+      { role: 'system', content: baseInstrucoes + '\n' + comportamento + '\n' + protocoloReserva },
       { role: 'system', content: contexto },
       ...incoming.slice(-12),
     ];
@@ -191,6 +206,15 @@ ${cardapioTxt}`;
         reply = lead || 'Pode me confirmar os dados da reserva, por favor?';
       }
     }
+
+    // ---- Troca [[FOTO:nome]] pela imagem real do banco (sem alucinar URL) ----
+    reply = reply
+      .replace(/\[\[FOTO:([^\]]+)\]\]/g, (_m: string, nm: string) => {
+        const u = photoMap.get(norm(nm));
+        return u ? `[[IMG:${u}]]` : '';
+      })
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
 
     // ---- Guarda no cache (respostas simples, sem reserva/botões) ----
     if (podeCachear && !reservation && reply && !reply.includes('[BOTAO_') && !result.fallbackUsed) {
