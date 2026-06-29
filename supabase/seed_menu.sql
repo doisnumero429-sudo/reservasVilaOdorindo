@@ -2,6 +2,7 @@
 --  VILLA GRILL — CARDÁPIO (gerado a partir do site original)
 --  Rode DEPOIS de schema.sql e seed.sql, no SQL Editor do Supabase.
 --  Só insere se o cardápio ainda estiver vazio (pode rodar de novo sem duplicar).
+--  Observação: a variação genérica "Padrão" foi removida (fica vazia).
 -- =====================================================================
 do $$
 declare rid uuid; cid uuid;
@@ -54,11 +55,11 @@ begin
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Sodas Italianas', 2, true) returning id into cid;
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Tangerina', 'Padrão', 18, null, 1, true, true);
+    values (rid, cid, 'Tangerina', null, 18, null, 1, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Maçã Verde', 'Padrão', 18, null, 2, true, true);
+    values (rid, cid, 'Maçã Verde', null, 18, null, 2, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Limão Siciliano', 'Padrão', 18, null, 3, true, true);
+    values (rid, cid, 'Limão Siciliano', null, 18, null, 3, true, true);
 
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Não alcoólicos', 3, true) returning id into cid;
@@ -125,27 +126,27 @@ begin
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Long Neck', 5, true) returning id into cid;
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Corona', 'Padrão', 15, null, 1, true, true);
+    values (rid, cid, 'Corona', null, 15, null, 1, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Corona Cero', 'Padrão', 15, null, 2, true, true);
+    values (rid, cid, 'Corona Cero', null, 15, null, 2, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Stella Pure Gold', 'Padrão', 13, null, 3, true, true);
+    values (rid, cid, 'Stella Pure Gold', null, 13, null, 3, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Heineken', 'Padrão', 15, null, 4, true, true);
+    values (rid, cid, 'Heineken', null, 15, null, 4, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Heineken Zero', 'Padrão', 15, null, 5, true, true);
+    values (rid, cid, 'Heineken Zero', null, 15, null, 5, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Brahma Malzbier', 'Padrão', 14, null, 6, true, true);
+    values (rid, cid, 'Brahma Malzbier', null, 14, null, 6, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Budweiser', 'Padrão', 13, null, 7, true, true);
+    values (rid, cid, 'Budweiser', null, 13, null, 7, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Budweiser Zero', 'Padrão', 13, null, 8, true, true);
+    values (rid, cid, 'Budweiser Zero', null, 13, null, 8, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Amstel Ultra', 'Padrão', 12, null, 9, true, true);
+    values (rid, cid, 'Amstel Ultra', null, 12, null, 9, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Império Ultra', 'Padrão', 12, null, 10, true, true);
+    values (rid, cid, 'Império Ultra', null, 12, null, 10, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Smirnoff Ice', 'Padrão', 12, null, 11, true, true);
+    values (rid, cid, 'Smirnoff Ice', null, 12, null, 11, true, true);
 
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Chopp', 6, true) returning id into cid;
@@ -165,45 +166,45 @@ begin
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Drinks Clássicos', 7, true) returning id into cid;
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Mojito', 'Padrão', 29, 'Rum blanc, limão, xarope de açúcar, água com gás e hortelã.', 1, true, true);
+    values (rid, cid, 'Mojito', null, 29, 'Rum blanc, limão, xarope de açúcar, água com gás e hortelã.', 1, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Garibaldi', 'Padrão', 29, 'Campari e suco de laranja.', 2, true, true);
+    values (rid, cid, 'Garibaldi', null, 29, 'Campari e suco de laranja.', 2, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Sex On The Beach', 'Padrão', 29, 'Vodka, licor de pêssego, suco de laranja, suco de cranberry, gelo e fruta para decorar.', 3, true, true);
+    values (rid, cid, 'Sex On The Beach', null, 29, 'Vodka, licor de pêssego, suco de laranja, suco de cranberry, gelo e fruta para decorar.', 3, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Moscow Mule', 'Padrão', 26, 'Vodka, xarope de gengibre, limão e espuma de gengibre.', 4, true, true);
+    values (rid, cid, 'Moscow Mule', null, 26, 'Vodka, xarope de gengibre, limão e espuma de gengibre.', 4, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Danoninho', 'Padrão', 29, 'Vodka, morango, leite condensado, grenadine e chantilly.', 5, true, true);
+    values (rid, cid, 'Danoninho', null, 29, 'Vodka, morango, leite condensado, grenadine e chantilly.', 5, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Piña Colada', 'Padrão', 29, 'Rum, leite de coco, leite condensado e abacaxi.', 6, true, true);
+    values (rid, cid, 'Piña Colada', null, 29, 'Rum, leite de coco, leite condensado e abacaxi.', 6, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Aperol Spritz', 'Padrão', 33, 'Aperol, bitter de laranja, vinho espumante e água com gás.', 7, true, true);
+    values (rid, cid, 'Aperol Spritz', null, 33, 'Aperol, bitter de laranja, vinho espumante e água com gás.', 7, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Margarita', 'Padrão', 32, 'Tequila, suco de limão, licor fino de laranja e borda de sal.', 8, true, true);
+    values (rid, cid, 'Margarita', null, 32, 'Tequila, suco de limão, licor fino de laranja e borda de sal.', 8, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Negroni', 'Padrão', 32, 'Gin, Campari, vermute rosso e casca de laranja.', 9, true, true);
+    values (rid, cid, 'Negroni', null, 32, 'Gin, Campari, vermute rosso e casca de laranja.', 9, true, true);
 
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Drinks com Gin', 8, true) returning id into cid;
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Gin & Tônica', 'Padrão', 30, 'Gin, limão e tônica.', 1, true, true);
+    values (rid, cid, 'Gin & Tônica', null, 30, 'Gin, limão e tônica.', 1, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Leblon Gin Tônica', 'Padrão', 35, 'Limão siciliano, pimenta rosa e hortelã.', 2, true, true);
+    values (rid, cid, 'Leblon Gin Tônica', null, 35, 'Limão siciliano, pimenta rosa e hortelã.', 2, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Realeza Gin Tônica', 'Padrão', 35, 'Xarope de morango, gin, água tônica, morango e canela.', 3, true, true);
+    values (rid, cid, 'Realeza Gin Tônica', null, 35, 'Xarope de morango, gin, água tônica, morango e canela.', 3, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Gin Tropical', 'Padrão', 35, 'Gin, Red Bull tropical, maracujá, hortelã e limão siciliano em rodelas.', 4, true, true);
+    values (rid, cid, 'Gin Tropical', null, 35, 'Gin, Red Bull tropical, maracujá, hortelã e limão siciliano em rodelas.', 4, true, true);
 
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Drinks Não Alcoólicos', 9, true) returning id into cid;
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Moskow sem Mula', 'Padrão', 26, 'Limão-taiti, xarope de gengibre, água com gás e espuma cítrica de gengibre.', 1, true, true);
+    values (rid, cid, 'Moskow sem Mula', null, 26, 'Limão-taiti, xarope de gengibre, água com gás e espuma cítrica de gengibre.', 1, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Batidinha', 'Padrão', 24, 'Morango, H2O e leite condensado.', 2, true, true);
+    values (rid, cid, 'Batidinha', null, 24, 'Morango, H2O e leite condensado.', 2, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'La Belle de Jour', 'Padrão', 22, 'Morangos macerados, H2O limão, xarope de curaçau blue e laranja.', 3, true, true);
+    values (rid, cid, 'La Belle de Jour', null, 22, 'Morangos macerados, H2O limão, xarope de curaçau blue e laranja.', 3, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Pink Lemonade', 'Padrão', 22, 'Limão-taiti, xarope de grenadine, água com gás, cereja e hortelã.', 4, true, true);
+    values (rid, cid, 'Pink Lemonade', null, 22, 'Limão-taiti, xarope de grenadine, água com gás, cereja e hortelã.', 4, true, true);
 
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Caipirinhas', 10, true) returning id into cid;
@@ -257,25 +258,25 @@ begin
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Vinhos', 13, true) returning id into cid;
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Mioranza', 'Padrão', 45, 'Tinto suave', 1, true, true);
+    values (rid, cid, 'Mioranza', null, 45, 'Tinto suave', 1, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Almadén', 'Padrão', 70, 'Sauvignon Demi-sec.', 2, true, true);
+    values (rid, cid, 'Almadén', null, 70, 'Sauvignon Demi-sec.', 2, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Miolo Seleção', 'Padrão', 70, 'Sauvignon Demi-sec.', 3, true, true);
+    values (rid, cid, 'Miolo Seleção', null, 70, 'Sauvignon Demi-sec.', 3, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Marcus James', 'Padrão', 80, 'Cabernet Sauvignon', 4, true, true);
+    values (rid, cid, 'Marcus James', null, 80, 'Cabernet Sauvignon', 4, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Santa Helena', 'Padrão', 80, 'Cabernet Sauvignon', 5, true, true);
+    values (rid, cid, 'Santa Helena', null, 80, 'Cabernet Sauvignon', 5, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Casillero Del Diablo', 'Padrão', 110, 'Cabernet', 6, true, true);
+    values (rid, cid, 'Casillero Del Diablo', null, 110, 'Cabernet', 6, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Periquita', 'Padrão', 130, 'Sauvignon Demi-sec.', 7, true, true);
+    values (rid, cid, 'Periquita', null, 130, 'Sauvignon Demi-sec.', 7, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Cavicchioli', 'Padrão', 78, 'Lambrusco | Tinto frisante', 8, true, true);
+    values (rid, cid, 'Cavicchioli', null, 78, 'Lambrusco | Tinto frisante', 8, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'DV Catena', 'Padrão', 170, 'Sauvignon Malbec', 9, true, true);
+    values (rid, cid, 'DV Catena', null, 170, 'Sauvignon Malbec', 9, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Angelica Zapata', 'Padrão', 249, 'Cabernet Sauvignon', 10, true, true);
+    values (rid, cid, 'Angelica Zapata', null, 249, 'Cabernet Sauvignon', 10, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
     values (rid, cid, 'Tinto Suave', 'Taça', 14, null, 11, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
@@ -330,7 +331,7 @@ begin
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Shots', 16, true) returning id into cid;
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Choppinho do Villa', 'Padrão', 26, 'Licor 43 e creme especial do Villa.', 1, true, true);
+    values (rid, cid, 'Choppinho do Villa', null, 26, 'Licor 43 e creme especial do Villa.', 1, true, true);
 
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Saladas', 17, true) returning id into cid;
@@ -339,85 +340,85 @@ begin
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
     values (rid, cid, 'Salada Villa Grill', 'Inteira', 89, 'Carpaccio, mix de alface, rúcula, tomate, palmito, molho de alcaparras e parmesão ralado.', 2, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Salada Caeser', 'Padrão', 55, 'Mix de folhas, molho Caesar, frango em cubos, croutons e parmesão ralado.', 3, true, true);
+    values (rid, cid, 'Salada Caeser', null, 55, 'Mix de folhas, molho Caesar, frango em cubos, croutons e parmesão ralado.', 3, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Salada do Cheff', 'Padrão', 45, 'Alface, tomate, palmito, molho de alcaparra e parmesão ralado.', 4, true, true);
+    values (rid, cid, 'Salada do Cheff', null, 45, 'Alface, tomate, palmito, molho de alcaparra e parmesão ralado.', 4, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Salada Completa', 'Padrão', 85, 'Brócolis, couve-flor, cenoura, ovo cozido, milho, ervilha, presunto, muçarela, alface, tomate, palmito e cebola.', 5, true, true);
+    values (rid, cid, 'Salada Completa', null, 85, 'Brócolis, couve-flor, cenoura, ovo cozido, milho, ervilha, presunto, muçarela, alface, tomate, palmito e cebola.', 5, true, true);
 
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Entradas', 18, true) returning id into cid;
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Berinjela ao Forno', 'Padrão', 59, 'Berinjela, abobrinha, alho, azeite de oliva, tomate, manjericão, muçarela, parmesão e torradinha.', 1, true, true);
+    values (rid, cid, 'Berinjela ao Forno', null, 59, 'Berinjela, abobrinha, alho, azeite de oliva, tomate, manjericão, muçarela, parmesão e torradinha.', 1, true, true);
 
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Individuais', 19, true) returning id into cid;
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Cupim Casqueirado', 'Padrão', 59, 'Cupim casqueirado, mandioca, arroz branco e salada.', 1, true, true);
+    values (rid, cid, 'Cupim Casqueirado', null, 59, 'Cupim casqueirado, mandioca, arroz branco e salada.', 1, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Salmão Grelhado', 'Padrão', 109, null, 2, true, true);
+    values (rid, cid, 'Salmão Grelhado', null, 109, null, 2, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Picanha Grelhada', 'Padrão', 89, 'Picanha grelhada, mandioca, arroz branco e salada.', 3, true, true);
+    values (rid, cid, 'Picanha Grelhada', null, 89, 'Picanha grelhada, mandioca, arroz branco e salada.', 3, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Filé Mignon à Parmegiana', 'Padrão', 89, null, 4, true, true);
+    values (rid, cid, 'Filé Mignon à Parmegiana', null, 89, null, 4, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Bife Ancho', 'Padrão', 69, null, 5, true, true);
+    values (rid, cid, 'Bife Ancho', null, 69, null, 5, true, true);
 
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Frios', 20, true) returning id into cid;
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Tábua de Frios | 600 gramas', 'Padrão', 95, 'Salame, ovo de codorna, azeitona, muçarela, presunto, palmito e parmesão.', 1, true, true);
+    values (rid, cid, 'Tábua de Frios | 600 gramas', null, 95, 'Salame, ovo de codorna, azeitona, muçarela, presunto, palmito e parmesão.', 1, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Provolone Misto | 250 gramas', 'Padrão', 59, 'Provolone, salame e azeitona.', 2, true, true);
+    values (rid, cid, 'Provolone Misto | 250 gramas', null, 59, 'Provolone, salame e azeitona.', 2, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Mista | 200 gramas', 'Padrão', 42, 'Presunto e muçarela.', 3, true, true);
+    values (rid, cid, 'Mista | 200 gramas', null, 42, 'Presunto e muçarela.', 3, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Salame com Azeitona | 100 gramas', 'Padrão', 39, 'Serve 2 a 3 pessoas.', 4, true, true);
+    values (rid, cid, 'Salame com Azeitona | 100 gramas', null, 39, 'Serve 2 a 3 pessoas.', 4, true, true);
 
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Porções', 21, true) returning id into cid;
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Picanha Aperitivo', 'Padrão', 139, 'Acompanha mandioca cozida e molho batido.', 1, true, true);
+    values (rid, cid, 'Picanha Aperitivo', null, 139, 'Acompanha mandioca cozida e molho batido.', 1, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Filé Mignon Acebolado Aperitivo', 'Padrão', 139, 'Acompanha mandioca cozida e molho batido.', 2, true, true);
+    values (rid, cid, 'Filé Mignon Acebolado Aperitivo', null, 139, 'Acompanha mandioca cozida e molho batido.', 2, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Carne Seca Acebolada', 'Padrão', 89, 'Com pimentões, cebola e mandioca frita.', 3, true, true);
+    values (rid, cid, 'Carne Seca Acebolada', null, 89, 'Com pimentões, cebola e mandioca frita.', 3, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Porção do Villa', 'Padrão', 79, 'Batata frita, calabresa acebolada e peito de frango aperitivo acebolado. Acompanha molho tártaro.', 4, true, true);
+    values (rid, cid, 'Porção do Villa', null, 79, 'Batata frita, calabresa acebolada e peito de frango aperitivo acebolado. Acompanha molho tártaro.', 4, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Linguiça Picante com Mandioca Frita', 'Padrão', 52, 'Acompanha molho vermelho.', 5, true, true);
+    values (rid, cid, 'Linguiça Picante com Mandioca Frita', null, 52, 'Acompanha molho vermelho.', 5, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Provolone à Milanesa', 'Padrão', 59, null, 6, true, true);
+    values (rid, cid, 'Provolone à Milanesa', null, 59, null, 6, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Calabresa Acebolada', 'Padrão', 49, null, 7, true, true);
+    values (rid, cid, 'Calabresa Acebolada', null, 49, null, 7, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Torresminho', 'Padrão', 49, null, 8, true, true);
+    values (rid, cid, 'Torresminho', null, 49, null, 8, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Bolinho de Cupim', 'Padrão', 49, '8 unidades. Com recheio de muçarela ou provolone.', 9, true, true);
+    values (rid, cid, 'Bolinho de Cupim', null, 49, '8 unidades. Com recheio de muçarela ou provolone.', 9, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Bolinho de Cabotiã com Carne Seca', 'Padrão', 49, '8 unidades.', 10, true, true);
+    values (rid, cid, 'Bolinho de Cabotiã com Carne Seca', null, 49, '8 unidades.', 10, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Bolinho de Mandioca com Linguiça Picante', 'Padrão', 44, '8 unidades.', 11, true, true);
+    values (rid, cid, 'Bolinho de Mandioca com Linguiça Picante', null, 44, '8 unidades.', 11, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Mix de Bolinho', 'Padrão', 59, '9 unidades. Bolinhos de mandioca com linguiça picante, cabotiã com carne seca e cupim com muçarela.', 12, true, true);
+    values (rid, cid, 'Mix de Bolinho', null, 59, '9 unidades. Bolinhos de mandioca com linguiça picante, cabotiã com carne seca e cupim com muçarela.', 12, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Pastelzinho', 'Padrão', 48, '10 unidades. Sabores: queijo e presunto, queijo ou carne.', 13, true, true);
+    values (rid, cid, 'Pastelzinho', null, 48, '10 unidades. Sabores: queijo e presunto, queijo ou carne.', 13, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Lombinho ao Sal Preto', 'Padrão', 59, 'Acompanha molho shoyu.', 14, true, true);
+    values (rid, cid, 'Lombinho ao Sal Preto', null, 59, 'Acompanha molho shoyu.', 14, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Carpaccio', 'Padrão', 55, 'Carpaccio coberto com molho de alcaparras e parmesão ralado. Acompanha pão francês.', 15, true, true);
+    values (rid, cid, 'Carpaccio', null, 55, 'Carpaccio coberto com molho de alcaparras e parmesão ralado. Acompanha pão francês.', 15, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Canapé de Carpaccio', 'Padrão', 55, 'Torradinha de pão com carpaccio desfiado, no molho de alcaparras e coberto com parmesão ralado.', 16, true, true);
+    values (rid, cid, 'Canapé de Carpaccio', null, 55, 'Torradinha de pão com carpaccio desfiado, no molho de alcaparras e coberto com parmesão ralado.', 16, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Sashimi de Tilápia', 'Padrão', 89, 'Acompanha pão francês fatiado.', 17, true, true);
+    values (rid, cid, 'Sashimi de Tilápia', null, 89, 'Acompanha pão francês fatiado.', 17, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Frango à Passarinho Completo', 'Padrão', 89, 'Acompanha batata frita, bacon e alho frito.', 18, true, true);
+    values (rid, cid, 'Frango à Passarinho Completo', null, 89, 'Acompanha batata frita, bacon e alho frito.', 18, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Frango à Passarinho Simples', 'Padrão', 79, 'Acompanha batata frita e molho tártaro.', 19, true, true);
+    values (rid, cid, 'Frango à Passarinho Simples', null, 79, 'Acompanha batata frita e molho tártaro.', 19, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Frango Crocante', 'Padrão', 69, 'Sobrecoxa desossada, empanada e frita. Acompanha batata frita, molho tártaro e molho especial.', 20, true, true);
+    values (rid, cid, 'Frango Crocante', null, 69, 'Sobrecoxa desossada, empanada e frita. Acompanha batata frita, molho tártaro e molho especial.', 20, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Isca de Frango', 'Padrão', 49, 'Acompanha molho tártaro.', 21, true, true);
+    values (rid, cid, 'Isca de Frango', null, 49, 'Acompanha molho tártaro.', 21, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
     values (rid, cid, 'Tilápia St. Peter à Dorê com Batata Frita', 'Meia', 90, '600g de tilápia empanada e frita. Acompanha molho de alho.', 22, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
@@ -496,49 +497,49 @@ begin
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
     values (rid, cid, 'Filé Mignon Villa Grill', 'Inteira', 159, 'Filé ao molho madeira com cebola caramelizada, milho, ervilha e batata frita.', 6, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Filé Napolitano', 'Padrão', 189, 'Filé mignon empanado enrolado tipo rocambole, recheado com Catupiry e presunto, coberto com molho branco e uvas passas, batata palha, panachê e banana à milanesa.', 7, true, true);
+    values (rid, cid, 'Filé Napolitano', null, 189, 'Filé mignon empanado enrolado tipo rocambole, recheado com Catupiry e presunto, coberto com molho branco e uvas passas, batata palha, panachê e banana à milanesa.', 7, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Filé Mignon com Fonduta de Queijo', 'Padrão', 120, '400g de tiras de filé mignon cobertas com Catupiry, gorgonzola e parmesão gratinado.', 8, true, true);
+    values (rid, cid, 'Filé Mignon com Fonduta de Queijo', null, 120, '400g de tiras de filé mignon cobertas com Catupiry, gorgonzola e parmesão gratinado.', 8, true, true);
 
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Massas', 25, true) returning id into cid;
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Espaguete à Bolonhesa', 'Padrão', 59, null, 1, true, true);
+    values (rid, cid, 'Espaguete à Bolonhesa', null, 59, null, 1, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Espaguete ao Sugo', 'Padrão', 49, 'Molho de tomate artesanal e parmesão ralado.', 2, true, true);
+    values (rid, cid, 'Espaguete ao Sugo', null, 49, 'Molho de tomate artesanal e parmesão ralado.', 2, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Talharim do Chefe', 'Padrão', 69, 'Talharim na manteiga com alho-poró e tomate seco.', 3, true, true);
+    values (rid, cid, 'Talharim do Chefe', null, 69, 'Talharim na manteiga com alho-poró e tomate seco.', 3, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Fettuccine Alfredo', 'Padrão', 89, 'Fettuccine ao molho Alfredo com tiras de filé mignon.', 4, true, true);
+    values (rid, cid, 'Fettuccine Alfredo', null, 89, 'Fettuccine ao molho Alfredo com tiras de filé mignon.', 4, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Espaguete à Carbonara', 'Padrão', 89, 'Espaguetti, bacon, ovos e queijo parmesão ralado.', 5, true, true);
+    values (rid, cid, 'Espaguete à Carbonara', null, 89, 'Espaguetti, bacon, ovos e queijo parmesão ralado.', 5, true, true);
 
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Risotos e Arroz', 26, true) returning id into cid;
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Parmesão com Ragu de Cupim', 'Padrão', 70, null, 1, true, true);
+    values (rid, cid, 'Parmesão com Ragu de Cupim', null, 70, null, 1, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Filé Mignon', 'Padrão', 90, null, 2, true, true);
+    values (rid, cid, 'Filé Mignon', null, 90, null, 2, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Camarão', 'Padrão', 90, null, 3, true, true);
+    values (rid, cid, 'Camarão', null, 90, null, 3, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Arroz Tropical', 'Padrão', 140, 'Arroz cremoso com abacaxi, camarão e especiarias.', 4, true, true);
+    values (rid, cid, 'Arroz Tropical', null, 140, 'Arroz cremoso com abacaxi, camarão e especiarias.', 4, true, true);
 
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Caldos', 27, true) returning id into cid;
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Caldo de Mandioca com Cupim', 'Padrão', 39, 'Creme de mandioca com cupim desfiado. Acompanha torradas.', 1, true, true);
+    values (rid, cid, 'Caldo de Mandioca com Cupim', null, 39, 'Creme de mandioca com cupim desfiado. Acompanha torradas.', 1, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Caldo Verde', 'Padrão', 39, 'Creme de batata com couve e calabresa. Acompanha torradas.', 2, true, true);
+    values (rid, cid, 'Caldo Verde', null, 39, 'Creme de batata com couve e calabresa. Acompanha torradas.', 2, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Creme de Palmito', 'Padrão', 49, 'Acompanha torradas.', 3, true, true);
+    values (rid, cid, 'Creme de Palmito', null, 49, 'Acompanha torradas.', 3, true, true);
 
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Pizzas — Entradas', 28, true) returning id into cid;
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Corniccioni Pomodori', 'Padrão', 23, 'Massa fina de pizza assada em forno à lenha com molho de tomate italiano e parmesão, cortada em pequenas fatias.', 1, true, true);
+    values (rid, cid, 'Corniccioni Pomodori', null, 23, 'Massa fina de pizza assada em forno à lenha com molho de tomate italiano e parmesão, cortada em pequenas fatias.', 1, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Corniccioni Pomodori | Alho e Óleo', 'Padrão', 23, 'Massa fina de pizza assada em forno à lenha com molho de tomate italiano, alho, óleo e parmesão, cortada em pequenas fatias.', 2, true, true);
+    values (rid, cid, 'Corniccioni Pomodori | Alho e Óleo', null, 23, 'Massa fina de pizza assada em forno à lenha com molho de tomate italiano, alho, óleo e parmesão, cortada em pequenas fatias.', 2, true, true);
 
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Pizzas — Bordas', 29, true) returning id into cid;
@@ -823,83 +824,83 @@ begin
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Aperitivos da Brasa', 37, true) returning id into cid;
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Linguiça Cuiabana Aperitivo', 'Padrão', 89, 'Excelente opção para petisco, muito suculenta e de sabor diferenciado.', 1, true, true);
+    values (rid, cid, 'Linguiça Cuiabana Aperitivo', null, 89, 'Excelente opção para petisco, muito suculenta e de sabor diferenciado.', 1, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Panceta na Brasa Aperitivo', 'Padrão', 70, null, 2, true, true);
+    values (rid, cid, 'Panceta na Brasa Aperitivo', null, 70, null, 2, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Queijo Coalho com mel', 'Padrão', 13, 'Unidade.', 3, true, true);
+    values (rid, cid, 'Queijo Coalho com mel', null, 13, 'Unidade.', 3, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Cupim Aperitivo', 'Padrão', 39, '150g.', 4, true, true);
+    values (rid, cid, 'Cupim Aperitivo', null, 39, '150g.', 4, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Pão de Alho', 'Padrão', 8, null, 5, true, true);
+    values (rid, cid, 'Pão de Alho', null, 8, null, 5, true, true);
 
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Lanches', 38, true) returning id into cid;
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'X-Cupim', 'Padrão', 39, 'Pão francês de 90g, cupim casqueirado, rúcula, tomate seco e queijo prato.', 1, true, true);
+    values (rid, cid, 'X-Cupim', null, 39, 'Pão francês de 90g, cupim casqueirado, rúcula, tomate seco e queijo prato.', 1, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Frango Salada', 'Padrão', 35, 'Pão francês, filé de frango, muçarela, tomate e alface.', 2, true, true);
+    values (rid, cid, 'Frango Salada', null, 35, 'Pão francês, filé de frango, muçarela, tomate e alface.', 2, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'X-Bacon', 'Padrão', 33, 'Hambúrguer artesanal, muçarela, presunto e bacon.', 3, true, true);
+    values (rid, cid, 'X-Bacon', null, 33, 'Hambúrguer artesanal, muçarela, presunto e bacon.', 3, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'X-Burger', 'Padrão', 25, 'Pão, hambúrguer artesanal e queijo.', 4, true, true);
+    values (rid, cid, 'X-Burger', null, 25, 'Pão, hambúrguer artesanal e queijo.', 4, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'X-Salada', 'Padrão', 26, 'Pão, hambúrguer artesanal, queijo, presunto, alface e tomate.', 5, true, true);
+    values (rid, cid, 'X-Salada', null, 26, 'Pão, hambúrguer artesanal, queijo, presunto, alface e tomate.', 5, true, true);
 
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Kids', 39, true) returning id into cid;
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Filé Mignon Grelhado', 'Padrão', 55, 'Acompanha arroz branco e batata frita.', 1, true, true);
+    values (rid, cid, 'Filé Mignon Grelhado', null, 55, 'Acompanha arroz branco e batata frita.', 1, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Filé de Frango', 'Padrão', 39, 'Acompanha arroz branco e batata frita.', 2, true, true);
+    values (rid, cid, 'Filé de Frango', null, 39, 'Acompanha arroz branco e batata frita.', 2, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Espaguete à Bolonhesa', 'Padrão', 39, 'Espaguete ao molho vermelho e carne moída.', 3, true, true);
+    values (rid, cid, 'Espaguete à Bolonhesa', null, 39, 'Espaguete ao molho vermelho e carne moída.', 3, true, true);
 
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Guarnições', 40, true) returning id into cid;
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Arroz Branco', 'Padrão', 13, null, 1, true, true);
+    values (rid, cid, 'Arroz Branco', null, 13, null, 1, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Molho Batido', 'Padrão', 4, null, 2, true, true);
+    values (rid, cid, 'Molho Batido', null, 4, null, 2, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Arroz ao Alho', 'Padrão', 18, null, 3, true, true);
+    values (rid, cid, 'Arroz ao Alho', null, 18, null, 3, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Salada Simples', 'Padrão', 10, null, 4, true, true);
+    values (rid, cid, 'Salada Simples', null, 10, null, 4, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Molho de Alho', 'Padrão', 5, null, 5, true, true);
+    values (rid, cid, 'Molho de Alho', null, 5, null, 5, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Arroz à Grega', 'Padrão', 18, null, 6, true, true);
+    values (rid, cid, 'Arroz à Grega', null, 18, null, 6, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Mandioca Cozida', 'Padrão', 11, null, 7, true, true);
+    values (rid, cid, 'Mandioca Cozida', null, 11, null, 7, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Molho Tártaro', 'Padrão', 5, null, 8, true, true);
+    values (rid, cid, 'Molho Tártaro', null, 5, null, 8, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Arroz Biro Biro', 'Padrão', 23, null, 9, true, true);
+    values (rid, cid, 'Arroz Biro Biro', null, 23, null, 9, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Feijão', 'Padrão', 13, null, 10, true, true);
+    values (rid, cid, 'Feijão', null, 13, null, 10, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Arroz Cremoso de Palmito', 'Padrão', 26, null, 11, true, true);
+    values (rid, cid, 'Arroz Cremoso de Palmito', null, 26, null, 11, true, true);
 
   insert into public.menu_categories (restaurant_id, name, sort_order, active)
     values (rid, 'Sobremesas', 41, true) returning id into cid;
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Banana ao Forno', 'Padrão', 22, 'Banana assada no forno à lenha, coberta com calda de chocolate, farofa de castanha e sorvete.', 1, true, true);
+    values (rid, cid, 'Banana ao Forno', null, 22, 'Banana assada no forno à lenha, coberta com calda de chocolate, farofa de castanha e sorvete.', 1, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Creme de Mamão Papaia com Cassis', 'Padrão', 22, null, 2, true, true);
+    values (rid, cid, 'Creme de Mamão Papaia com Cassis', null, 22, null, 2, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Café Expresso', 'Padrão', 8, null, 3, true, true);
+    values (rid, cid, 'Café Expresso', null, 8, null, 3, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Grand Gateau', 'Padrão', 49, 'Bolinho de chocolate cremoso com sorvete de palito Magnum, morango e farofa de castanha.', 4, true, true);
+    values (rid, cid, 'Grand Gateau', null, 49, 'Bolinho de chocolate cremoso com sorvete de palito Magnum, morango e farofa de castanha.', 4, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Petit Gateau', 'Padrão', 26, 'Acompanha sorvete de creme.', 5, true, true);
+    values (rid, cid, 'Petit Gateau', null, 26, 'Acompanha sorvete de creme.', 5, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Taça de Sorvete', 'Padrão', 15, '2 bolas: creme, chocolate, morango ou flocos.', 6, true, true);
+    values (rid, cid, 'Taça de Sorvete', null, 15, '2 bolas: creme, chocolate, morango ou flocos.', 6, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Brownie na Chapa', 'Padrão', 39, 'Servido na chapa quente, com sorvete de Ninho e ganache de chocolate.', 7, true, true);
+    values (rid, cid, 'Brownie na Chapa', null, 39, 'Servido na chapa quente, com sorvete de Ninho e ganache de chocolate.', 7, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Pudim de Leite Condensado', 'Padrão', 14, null, 8, true, true);
+    values (rid, cid, 'Pudim de Leite Condensado', null, 14, null, 8, true, true);
   insert into public.menu_items (restaurant_id, category_id, name, variation, price, description, sort_order, active, available)
-    values (rid, cid, 'Pudim de Leite Condensado com Sorvete', 'Padrão', 18, 'Acompanha 1 bola de sorvete de creme.', 9, true, true);
+    values (rid, cid, 'Pudim de Leite Condensado com Sorvete', null, 18, 'Acompanha 1 bola de sorvete de creme.', 9, true, true);
 
   raise notice 'Cardápio inserido com sucesso.';
 end $$;

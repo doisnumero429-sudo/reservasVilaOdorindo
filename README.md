@@ -53,6 +53,8 @@ Abra `http://localhost:3000` (site) e `http://localhost:3000/admin/login` (admin
 3. Faça o mesmo com `supabase/seed.sql` (dados iniciais do Villa Grill). Clique **Run**.
 4. (Opcional, recomendado) Faça o mesmo com `supabase/seed_menu.sql` para já trazer
    **todo o cardápio** (383 itens) para o banco. Clique **Run**.
+5. (Opcional) Para usar o **upload de imagens** (tela Personalização), rode também
+   `supabase/storage.sql`. Clique **Run**.
 
 Pronto: as 20 tabelas, as regras de segurança e os dados iniciais foram criados.
 
