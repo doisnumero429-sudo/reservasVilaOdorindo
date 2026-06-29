@@ -2,11 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin, getRestaurant } from '@/lib/supabase';
 import { cascadeChat, ChatMessage } from '@/lib/openrouter';
 import { buildMenuContext } from '@/lib/menu-context';
-import { createReservation } from '@/lib/reservations';
 
 export const runtime = 'nodejs';
-
-const BOOK_MARK = '[[RESERVAR]]';
 
 function norm(s: string) {
   return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim();
@@ -159,18 +156,8 @@ DESTAQUES / MAIS PEDIDOS: ${featuredTxt || '— (nenhum marcado)'}.
 FOTOS: para um prato com foto disponível, você PODE mostrar a imagem incluindo numa linha própria exatamente assim: [[FOTO:Nome exato do prato]] (use só o nome; eu insiro a foto). Não invente URLs.
 Pratos com foto disponível: ${comFoto || 'nenhum no momento'}.`;
 
-    const protocoloReserva = `
-VOCÊ PODE FAZER A RESERVA PELO CHAT. Para isso, colete naturalmente, um de cada vez:
-1) nome, 2) WhatsApp (com DDD), 3) data, 4) período (almoço ou noite), 5) horário, 6) número de pessoas, 7) setor de preferência.
-Regras:
-- Hoje é ${hojeISO} (${diaSemana}). Converta "amanhã/sexta/fim de semana" para a data real (formato AAAA-MM-DD).
-- NUNCA reserve em data bloqueada ou em evento que bloqueia reservas (veja DISPONIBILIDADE). Ofereça outra data.
-- Respeite o mínimo/máximo de pessoas. Grupo grande: oriente falar com a equipe.
-- A reserva fica PENDENTE (a equipe confirma depois pelo WhatsApp). Deixe isso claro.
-- Confirme os dados com o cliente ANTES de finalizar.
-Quando o cliente CONFIRMAR e você tiver TODOS os dados, escreva uma frase curta de confirmação e, na última linha, APENAS isto (nada depois):
-${BOOK_MARK}{"nome":"...","whatsapp":"...","pessoas":N,"data":"AAAA-MM-DD","periodo":"almoco|noite","horario":"HH:MM","setor":"codigo_do_setor","observacoes":"..."}
-Não mostre esse código se ainda faltar algum dado.`;
+    const instrucaoReserva = `
+RESERVAS: você NÃO faz a reserva pelo chat e NÃO coleta os dados da reserva. Quando o cliente quiser reservar (ou perguntar como faz para reservar), responda de forma calorosa, explique em uma frase que é rapidinho preencher, e TERMINE a mensagem com o token [BOTAO_RESERVA] — ele abre a tela de reserva para o cliente preencher. Hoje é ${hojeISO} (${diaSemana}); se a data que ele citar estiver bloqueada ou em evento que bloqueia reservas (veja DISPONIBILIDADE), avise com gentileza antes de mandar o botão. Grupos muito grandes: oriente falar com a equipe pelo WhatsApp ([BOTAO_WHATSAPP]).`;
 
     const contexto = `DADOS DA CASA:
 ${restaurant.name} | Endereço: ${restaurant.address || ''} | WhatsApp: ${restaurant.whatsapp_number || ''} | Instagram: ${restaurant.instagram_handle || ''}
@@ -188,7 +175,7 @@ ${faqTxt ? `\nBASE DE CONHECIMENTO DA CASA (use estas respostas oficiais quando 
 ${cardapioTxt}`;
 
     const messages: ChatMessage[] = [
-      { role: 'system', content: baseInstrucoes + '\n' + comportamento + '\n' + protocoloReserva },
+      { role: 'system', content: baseInstrucoes + '\n' + comportamento + '\n' + instrucaoReserva },
       { role: 'system', content: contexto },
       ...incoming.slice(-12),
     ];
@@ -202,46 +189,6 @@ ${cardapioTxt}`;
 
     const result = await cascadeChat(messages, ai || {});
     let reply = result.text || '';
-    let reservation: any = null;
-
-    // ---- Detecta a reserva por conversa ----
-    const mark = reply.indexOf(BOOK_MARK);
-    if (mark >= 0) {
-      const lead = reply.slice(0, mark).trim();
-      const jsonRaw = reply.slice(mark + BOOK_MARK.length).trim();
-      const m = jsonRaw.match(/\{[\s\S]*\}/);
-      try {
-        const dados = m ? JSON.parse(m[0]) : null;
-        if (dados) {
-          const res = await createReservation({
-            restaurantId: restaurant.id,
-            nome: dados.nome,
-            whatsapp: dados.whatsapp,
-            pessoas: Number(dados.pessoas),
-            data: dados.data,
-            periodo: dados.periodo === 'noite' ? 'noite' : 'almoco',
-            horario: dados.horario,
-            setorCode: dados.setor,
-            observacoes: dados.observacoes,
-            source: 'chat',
-          });
-          if (res.ok) {
-            reservation = { id: res.reservation.id };
-            reply = `${lead ? lead + '\n\n' : ''}✅ Prontinho! Sua pré-reserva foi registrada e está *pendente de confirmação*. A equipe vai te chamar no WhatsApp para confirmar. 🙏`;
-          } else if (res.blocked) {
-            reply = `${lead ? lead + '\n\n' : ''}Ah, nessa data não consigo reservar: ${res.message || res.error} Quer tentar outra data? 😊`;
-          } else if (res.largeGroup) {
-            reply = `${lead ? lead + '\n\n' : ''}Para esse número de pessoas, o melhor é falar direto com a equipe pra organizarmos tudo com carinho. ${res.message || ''} [BOTAO_WHATSAPP]`;
-          } else {
-            reply = `${lead ? lead + '\n\n' : ''}Não consegui finalizar: ${res.error}. Pode me confirmar os dados de novo?`;
-          }
-        } else {
-          reply = lead || 'Pode me confirmar os dados da reserva, por favor?';
-        }
-      } catch {
-        reply = lead || 'Pode me confirmar os dados da reserva, por favor?';
-      }
-    }
 
     // ---- Troca [[FOTO:nome]] pela imagem real do banco (sem alucinar URL) ----
     reply = reply
@@ -269,7 +216,7 @@ ${cardapioTxt}`;
     }
 
     // ---- Guarda no cache (respostas simples, sem reserva/botões) ----
-    if (podeCachear && !reservation && !precoInventado && reply && !reply.includes('[BOTAO_') && !result.fallbackUsed) {
+    if (podeCachear && !precoInventado && reply && !reply.includes('[BOTAO_') && !result.fallbackUsed) {
       db.from('ai_cache')
         .upsert({ restaurant_id: restaurant.id, question_key: questionKey, answer: reply }, { onConflict: 'restaurant_id,question_key' })
         .then(() => {});
@@ -277,7 +224,7 @@ ${cardapioTxt}`;
 
     const logId = await logAi(db, restaurant.id, sessionId, userMessage, reply, result.model, result.step, result.inputTokens || 0, result.outputTokens || 0, result.latencyMs, result.fallbackUsed);
 
-    return NextResponse.json({ ok: true, reply, step: result.step, model: result.model, reservation, log_id: logId, cascadeError: result.error || null });
+    return NextResponse.json({ ok: true, reply, step: result.step, model: result.model, log_id: logId, cascadeError: result.error || null });
   } catch (err: any) {
     return NextResponse.json({ ok: false, error: String(err?.message || err) }, { status: 500 });
   }
