@@ -37,13 +37,14 @@ export async function POST(req: NextRequest) {
     const hojeISO = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
     const diaSemana = new Intl.DateTimeFormat('pt-BR', { timeZone: tz, weekday: 'long' }).format(new Date());
 
-    const [{ data: ai }, { data: rules }, { data: sectors }, { data: events }, { data: blocks }, { data: highlights }] = await Promise.all([
+    const [{ data: ai }, { data: rules }, { data: sectors }, { data: events }, { data: blocks }, { data: highlights }, { data: knowledge }] = await Promise.all([
       db.from('ai_settings').select('*').eq('restaurant_id', restaurant.id).maybeSingle(),
       db.from('reservation_rules').select('*').eq('restaurant_id', restaurant.id).maybeSingle(),
       db.from('sectors').select('code,public_name,active,allow_reservation').eq('restaurant_id', restaurant.id).eq('active', true).order('sort_order'),
       db.from('special_events').select('title,event_date,public_message,block_reservations,active').eq('restaurant_id', restaurant.id).eq('active', true).gte('event_date', hojeISO),
       db.from('reservation_blocks').select('block_date,period,public_message').eq('restaurant_id', restaurant.id).gte('block_date', hojeISO).order('block_date'),
       db.from('menu_items').select('name,featured,image:assets(public_url)').eq('restaurant_id', restaurant.id).eq('active', true).or('featured.eq.true,image_asset_id.not.is.null'),
+      db.from('ai_knowledge').select('id,question,answer,keywords,hits').eq('restaurant_id', restaurant.id).eq('active', true).order('sort_order'),
     ]);
 
     // destaques (mais pedidos) e mapa de fotos (nome -> URL real, para não inventar link)
@@ -76,8 +77,23 @@ export async function POST(req: NextRequest) {
         .maybeSingle();
       if (hit) {
         db.from('ai_cache').update({ hits: (hit.hits || 1) + 1, updated_at: new Date().toISOString() }).eq('id', hit.id).then(() => {});
-        await logAi(db, restaurant.id, sessionId, userMessage, hit.answer, null, 'cache', 0, 0, Date.now() - start, false);
-        return NextResponse.json({ ok: true, reply: hit.answer, step: 'cache' });
+        const logId = await logAi(db, restaurant.id, sessionId, userMessage, hit.answer, null, 'cache', 0, 0, Date.now() - start, false);
+        return NextResponse.json({ ok: true, reply: hit.answer, step: 'cache', log_id: logId });
+      }
+    }
+
+    // ---- Etapa 0.5: base de conhecimento (FAQ treinável pela casa) ----
+    const qPad = ` ${questionKey} `;
+    if (incoming.length <= 2 && knowledge && (knowledge as any[]).length) {
+      const hit = (knowledge as any[]).find((k) => {
+        const kws = (k.keywords || []).map((w: string) => norm(w)).filter(Boolean);
+        if (!kws.length) return false;
+        return kws.every((w: string) => qPad.includes(w));
+      });
+      if (hit) {
+        db.from('ai_knowledge').update({ hits: (hit.hits || 0) + 1 }).eq('id', hit.id).then(() => {});
+        const logId = await logAi(db, restaurant.id, sessionId, userMessage, hit.answer, null, 'faq', 0, 0, Date.now() - start, false);
+        return NextResponse.json({ ok: true, reply: hit.answer, step: 'faq', log_id: logId });
       }
     }
 
@@ -92,8 +108,8 @@ export async function POST(req: NextRequest) {
     ]);
     if ((hoje || 0) >= dailyLimit || (minuto || 0) >= minuteLimit) {
       const msg = ai?.fallback_message || 'Estou com muitas conversas agora 😅 me chama de novo em instantes, ou fale com a equipe pelo WhatsApp.';
-      await logAi(db, restaurant.id, sessionId, userMessage, msg, null, 'ratelimited', 0, 0, Date.now() - start, true);
-      return NextResponse.json({ ok: true, reply: msg, step: 'ratelimited' });
+      const logId = await logAi(db, restaurant.id, sessionId, userMessage, msg, null, 'ratelimited', 0, 0, Date.now() - start, true);
+      return NextResponse.json({ ok: true, reply: msg, step: 'ratelimited', log_id: logId });
     }
 
     // ---- Contexto: disponibilidade + setores + cardápio relevante ----
@@ -105,6 +121,9 @@ export async function POST(req: NextRequest) {
       ? (events || []).map((e: any) => `- ${e.event_date}: ${e.title}${e.block_reservations ? ' [BLOQUEIA RESERVAS]' : ''} — ${e.public_message || ''}`).join('\n')
       : 'Nenhum evento próximo.';
     const cardapioTxt = await buildMenuContext(db, restaurant.id, userMessage);
+    const faqTxt = (knowledge && (knowledge as any[]).length)
+      ? (knowledge as any[]).map((k) => `P: ${k.question}\nR: ${k.answer}`).join('\n\n')
+      : '';
 
     const regrasTxt = rules
       ? `Reservas: ${rules.lunch_enabled ? 'almoço sim' : 'almoço não'}, ${rules.dinner_enabled ? 'noite sim' : 'noite não'}. De ${rules.min_people} a ${rules.max_people} pessoas. Grupos com ${rules.large_group_threshold}+ pessoas falam com a equipe. ${rules.awareness_text || ''}`
@@ -148,7 +167,7 @@ Bloqueios:
 ${bloqueiosTxt}
 Eventos:
 ${eventosTxt}
-
+${faqTxt ? `\nBASE DE CONHECIMENTO DA CASA (use estas respostas oficiais quando couber):\n${faqTxt}\n` : ''}
 ${cardapioTxt}`;
 
     const messages: ChatMessage[] = [
@@ -160,8 +179,8 @@ ${cardapioTxt}`;
     // modo 'local' não chama a IA
     if (ai?.mode === 'local') {
       const reply = ai.fallback_message || 'Posso te ajudar com cardápio, horários e reservas. O que você procura?';
-      await logAi(db, restaurant.id, sessionId, userMessage, reply, null, 'local', 0, 0, Date.now() - start, true);
-      return NextResponse.json({ ok: true, reply, step: 'local' });
+      const logId = await logAi(db, restaurant.id, sessionId, userMessage, reply, null, 'local', 0, 0, Date.now() - start, true);
+      return NextResponse.json({ ok: true, reply, step: 'local', log_id: logId });
     }
 
     const result = await cascadeChat(messages, ai || {});
@@ -223,9 +242,9 @@ ${cardapioTxt}`;
         .then(() => {});
     }
 
-    await logAi(db, restaurant.id, sessionId, userMessage, reply, result.model, result.step, result.inputTokens || 0, result.outputTokens || 0, result.latencyMs, result.fallbackUsed);
+    const logId = await logAi(db, restaurant.id, sessionId, userMessage, reply, result.model, result.step, result.inputTokens || 0, result.outputTokens || 0, result.latencyMs, result.fallbackUsed);
 
-    return NextResponse.json({ ok: true, reply, step: result.step, model: result.model, reservation });
+    return NextResponse.json({ ok: true, reply, step: result.step, model: result.model, reservation, log_id: logId });
   } catch (err: any) {
     return NextResponse.json({ ok: false, error: String(err?.message || err) }, { status: 500 });
   }
@@ -234,12 +253,13 @@ ${cardapioTxt}`;
 async function logAi(
   db: any, restaurantId: string, sessionId: string | null, userMessage: string, assistantMessage: string,
   model: string | null, step: string, inputTokens: number, outputTokens: number, latencyMs: number, fallbackUsed: boolean
-) {
+): Promise<string | null> {
   try {
-    await db.from('ai_logs').insert({
+    const { data } = await db.from('ai_logs').insert({
       restaurant_id: restaurantId, session_id: sessionId, user_message: userMessage, assistant_message: assistantMessage,
       selected_model: model, cascade_step: step, input_tokens: inputTokens, output_tokens: outputTokens,
       latency_ms: latencyMs, fallback_used: fallbackUsed,
-    });
-  } catch {}
+    }).select('id').single();
+    return data?.id || null;
+  } catch { return null; }
 }

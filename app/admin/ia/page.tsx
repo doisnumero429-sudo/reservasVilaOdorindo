@@ -20,6 +20,15 @@ export default function IaPage() {
   const [msg, setMsg] = useState('');
   const [teste, setTeste] = useState('');
   const [resposta, setResposta] = useState('');
+  const [conhecimento, setConhecimento] = useState<any[]>([]);
+  const [novo, setNovo] = useState({ question: '', answer: '', keywords: '' });
+
+  async function carregarConhecimento(ridArg?: string | null) {
+    const r = ridArg ?? rid;
+    if (!r) return;
+    const { data } = await supabase.from('ai_knowledge').select('*').eq('restaurant_id', r).order('sort_order');
+    setConhecimento(data || []);
+  }
 
   useEffect(() => {
     (async () => {
@@ -27,9 +36,31 @@ export default function IaPage() {
       setRid(rest?.id || null);
       const { data } = await supabase.from('ai_settings').select('*').maybeSingle();
       if (data) setA({ ...a, ...data, cascade_config: { ...a.cascade_config, ...(data.cascade_config || {}) } });
+      carregarConhecimento(rest?.id || null);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  async function addConhecimento() {
+    if (!rid || !novo.question.trim() || !novo.answer.trim()) return flash('Preencha pergunta e resposta.');
+    const keywords = novo.keywords.split(',').map((k) => k.trim()).filter(Boolean);
+    await supabase.from('ai_knowledge').insert({ restaurant_id: rid, question: novo.question, answer: novo.answer, keywords, sort_order: conhecimento.length + 1, active: true });
+    setNovo({ question: '', answer: '', keywords: '' });
+    flash('Conhecimento adicionado.');
+    carregarConhecimento();
+  }
+  async function salvarConhecimento(k: any) {
+    await supabase.from('ai_knowledge').update({
+      question: k.question, answer: k.answer, active: k.active,
+      keywords: typeof k.keywords === 'string' ? k.keywords.split(',').map((x: string) => x.trim()).filter(Boolean) : k.keywords,
+    }).eq('id', k.id);
+    flash('Salvo.');
+    carregarConhecimento();
+  }
+  async function removerConhecimento(id: string) {
+    await supabase.from('ai_knowledge').delete().eq('id', id);
+    carregarConhecimento();
+  }
 
   function flash(t: string) {
     setMsg(t);
@@ -153,6 +184,45 @@ export default function IaPage() {
           </button>
         </div>
         {resposta && <p style={{ marginTop: 12 }}>{resposta}</p>}
+      </div>
+
+      <div className="adm-card" style={{ marginTop: 16 }}>
+        <h2>Base de conhecimento (treine a Lorena)</h2>
+        <p className="adm-sub" style={{ marginTop: -4 }}>
+          Adicione perguntas e respostas próprias (estacionamento, formas de pagamento, pet friendly...).
+          A Lorena usa estas respostas oficiais. As <b>palavras-chave</b> (separadas por vírgula) fazem ela
+          responder na hora, sem custo de IA, quando o cliente usa essas palavras.
+        </p>
+        <div className="adm-card" style={{ background: '#0b0907' }}>
+          <label className="adm-label">Pergunta</label>
+          <input className="adm-input" value={novo.question} onChange={(e) => setNovo({ ...novo, question: e.target.value })} placeholder="Tem estacionamento?" />
+          <label className="adm-label">Resposta oficial</label>
+          <textarea className="adm-textarea" value={novo.answer} onChange={(e) => setNovo({ ...novo, answer: e.target.value })} placeholder="Sim! Temos estacionamento próprio e gratuito. 🚗" />
+          <label className="adm-label">Palavras-chave (separadas por vírgula)</label>
+          <input className="adm-input" value={novo.keywords} onChange={(e) => setNovo({ ...novo, keywords: e.target.value })} placeholder="estacionamento, estaciona, vaga, carro" />
+          <div style={{ marginTop: 12 }}><button className="adm-btn gold" onClick={addConhecimento}>Adicionar</button></div>
+        </div>
+
+        {conhecimento.length === 0 ? (
+          <p className="adm-sub">Nenhum conhecimento cadastrado ainda.</p>
+        ) : (
+          conhecimento.map((k, i) => (
+            <div className="adm-card" style={{ background: '#0b0907' }} key={k.id}>
+              <label className="adm-label">Pergunta</label>
+              <input className="adm-input" value={k.question || ''} onChange={(e) => { const n = [...conhecimento]; n[i] = { ...k, question: e.target.value }; setConhecimento(n); }} />
+              <label className="adm-label">Resposta</label>
+              <textarea className="adm-textarea" value={k.answer || ''} onChange={(e) => { const n = [...conhecimento]; n[i] = { ...k, answer: e.target.value }; setConhecimento(n); }} />
+              <label className="adm-label">Palavras-chave</label>
+              <input className="adm-input" value={Array.isArray(k.keywords) ? k.keywords.join(', ') : k.keywords || ''} onChange={(e) => { const n = [...conhecimento]; n[i] = { ...k, keywords: e.target.value }; setConhecimento(n); }} />
+              <div className="adm-row" style={{ marginTop: 8 }}>
+                <label><input type="checkbox" checked={!!k.active} onChange={(e) => { const n = [...conhecimento]; n[i] = { ...k, active: e.target.checked }; setConhecimento(n); }} /> Ativo</label>
+                <span className="adm-sub">Usos: {k.hits || 0}</span>
+                <button className="adm-btn sm gold" onClick={() => salvarConhecimento(k)}>Salvar</button>
+                <button className="adm-btn sm" onClick={() => removerConhecimento(k.id)}>Remover</button>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </AdminShell>
   );

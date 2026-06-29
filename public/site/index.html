@@ -939,7 +939,8 @@ async function respostaAnthropic(historico, fatia){
     });
     if(!r.ok) throw new Error('http '+r.status);
     const d=await r.json();
-    return (d && d.ok && d.reply) ? d.reply : {erro:true};
+    if(d && d.ok && d.reply){ lastLogId=d.log_id||null; return d.reply; }
+    return {erro:true};
   }catch(e){console.warn('IA (backend) falhou:',e);return {erro:true};}
 }
 
@@ -1202,9 +1203,11 @@ function badgeText(){return cfg.provider==='anthropic'?'IA':cfg.provider==='demo
 /* ---------- orquestrador ---------- */
 const historico=[]; let pending=false;
 let DELIVERY_URL='https://villa-grill-restaurante.goomer.app/'; // editável no painel (Configurações)
+let lastLogId=null; // id do log da última resposta da IA (para o feedback 👍/👎)
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function responder(q){
   if(pending)return; pending=true;
+  lastLogId=null;
   historico.push({role:'user',content:q});
   $('#status').textContent='digitando…';$('#status').classList.remove('online');showTyping(true);
 
@@ -1245,8 +1248,9 @@ async function responder(q){
   // -- fotos enviadas pela Lorena (destaques com imagem) --
   let fotos=[];
   if(resposta){resposta=resposta.replace(/\[\[IMG:([^\]]+)\]\]/g,(_,u)=>{fotos.push(u.trim());return '';}).replace(/\n{3,}/g,'\n\n').trim();}
-  if(resposta) addMsg(resposta,'in');
+  const msgEl=resposta?addMsg(resposta,'in'):null;
   fotos.forEach(u=>addImgMsg(u));
+  if(msgEl&&lastLogId)addFeedback(lastLogId,msgEl);
   const allButtons=[...actionsFor(q),...extraButtons];
   addActionButtons(allButtons);
   sndIn();
@@ -1310,6 +1314,17 @@ function addImgMsg(url){
   const row=document.createElement('div');row.className='msg-line in-line';
   const av=document.createElement('img');av.className='msg-avatar-mini';av.src=LORENA_AVATAR_SRC;av.alt='Lorena';
   row.appendChild(av);row.appendChild(m);chat.insertBefore(row,typing);chat.scrollTop=chat.scrollHeight;return m;}
+function addFeedback(logId,msgEl){
+  if(!logId)return;
+  const fb=document.createElement('div');
+  fb.style.cssText='margin:3px 0 2px 44px;display:flex;gap:10px;opacity:.55;font-size:14px;line-height:1';
+  fb.innerHTML='<button type="button" data-v="up" title="Resposta boa" style="background:none;border:0;cursor:pointer;font-size:14px;padding:0">👍</button><button type="button" data-v="down" title="Resposta ruim" style="background:none;border:0;cursor:pointer;font-size:14px;padding:0">👎</button>';
+  fb.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+    fetch('/api/ai/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({log_id:logId,vote:b.dataset.v})}).catch(()=>{});
+    fb.innerHTML='<span style="font-size:12px;color:var(--cinza,#A99C8C)">obrigada pelo retorno 🙏</span>';
+  }));
+  chat.insertBefore(fb,typing);chat.scrollTop=chat.scrollHeight;
+}
 function actionIcon(type){
   if(type==='instagram')return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>`;
   if(type==='whatsapp')return `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 3.5a8.43 8.43 0 0 0-7.22 12.78L3.9 20.5l4.33-.9a8.43 8.43 0 1 0 3.81-16.1Zm0 15.35a6.86 6.86 0 0 1-3.5-.96l-.25-.15-2.57.54.55-2.5-.16-.26a6.86 6.86 0 1 1 5.93 3.33Zm3.78-5.14c-.2-.1-1.2-.6-1.38-.67-.18-.07-.32-.1-.45.1-.13.2-.52.67-.64.8-.12.13-.24.15-.44.05-.2-.1-.86-.32-1.63-1-.6-.53-1-1.19-1.12-1.39-.12-.2-.01-.31.09-.41.09-.09.2-.24.3-.36.1-.12.13-.2.2-.34.07-.13.03-.25-.02-.35-.05-.1-.45-1.08-.62-1.48-.16-.39-.33-.34-.45-.35h-.38c-.13 0-.35.05-.53.25-.18.2-.7.68-.7 1.66 0 .98.72 1.93.82 2.06.1.13 1.42 2.16 3.43 3.03.48.21.85.33 1.14.42.48.15.92.13 1.27.08.39-.06 1.2-.49 1.36-.96.17-.47.17-.87.12-.96-.05-.09-.18-.14-.39-.24Z"/></svg>`;
