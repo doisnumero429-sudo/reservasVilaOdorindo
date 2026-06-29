@@ -1,0 +1,18 @@
+# dependências
+/node_modules
+
+# next
+/.next
+/out
+
+# ambiente (NUNCA comitar chaves)
+.env
+.env.local
+.env*.local
+
+# logs / sistema
+*.log
+.DS_Store
+.vercel
+*.tsbuildinfo
+next-env.d.ts
