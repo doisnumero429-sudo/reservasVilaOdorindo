@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     const hojeISO = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
     const diaSemana = new Intl.DateTimeFormat('pt-BR', { timeZone: tz, weekday: 'long' }).format(new Date());
 
-    const [{ data: ai }, { data: rules }, { data: sectors }, { data: events }, { data: blocks }, { data: highlights }, { data: knowledge }] = await Promise.all([
+    const [{ data: ai }, { data: rules }, { data: sectors }, { data: events }, { data: blocks }, { data: highlights }, { data: knowledge }, { data: precos }] = await Promise.all([
       db.from('ai_settings').select('*').eq('restaurant_id', restaurant.id).maybeSingle(),
       db.from('reservation_rules').select('*').eq('restaurant_id', restaurant.id).maybeSingle(),
       db.from('sectors').select('code,public_name,active,allow_reservation').eq('restaurant_id', restaurant.id).eq('active', true).order('sort_order'),
@@ -45,7 +45,12 @@ export async function POST(req: NextRequest) {
       db.from('reservation_blocks').select('block_date,period,public_message').eq('restaurant_id', restaurant.id).gte('block_date', hojeISO).order('block_date'),
       db.from('menu_items').select('name,featured,image:assets(public_url)').eq('restaurant_id', restaurant.id).eq('active', true).or('featured.eq.true,image_asset_id.not.is.null'),
       db.from('ai_knowledge').select('id,question,answer,keywords,hits').eq('restaurant_id', restaurant.id).eq('active', true).order('sort_order'),
+      db.from('menu_items').select('price').eq('restaurant_id', restaurant.id).eq('active', true).not('price', 'is', null),
     ]);
+
+    // conjunto de preços REAIS (em centavos) para travar invenção de preço
+    const precosValidos = new Set<number>();
+    (precos || []).forEach((p: any) => { if (p.price != null) precosValidos.add(Math.round(Number(p.price) * 100)); });
 
     // destaques (mais pedidos) e mapa de fotos (nome -> URL real, para não inventar link)
     const photoMap = new Map<string, string>();
@@ -140,8 +145,9 @@ COMO VOCÊ FALA:
 - Foque no que a pessoa pediu, mas ofereça sugestões e acompanhamentos. Conduza a conversa, ajude a decidir.
 - Destaque nomes de pratos e preços em **negrito**.
 
-REGRAS DE OURO:
-- Use SOMENTE os dados fornecidos (cardápio, regras, disponibilidade). NUNCA invente prato, preço, ingrediente, o que acompanha ou porção.
+REGRAS DE OURO (NUNCA quebre):
+- PREÇO: só diga um preço se ele estiver EXATAMENTE escrito no cardápio fornecido abaixo. Copie o número exato (ex.: R$ 59,00). É PROIBIDO estimar, arredondar, "achar" ou inventar preço. Se o preço do que perguntaram NÃO estiver na lista, diga: "esse valor eu confirmo certinho com a equipe 🙏" — NUNCA chute.
+- Use SOMENTE os dados fornecidos (cardápio, regras, disponibilidade). NUNCA invente prato, ingrediente, o que acompanha ou porção.
 - Se não tiver a informação, diga com naturalidade que confirma com a equipe — nunca invente.
 - Não prometa desconto.`;
 
@@ -246,8 +252,24 @@ ${cardapioTxt}`;
       .replace(/\n{3,}/g, '\n\n')
       .trim();
 
+    // ---- TRAVA ANTI-PREÇO-INVENTADO ----
+    // Se a Lorena citar um valor que NÃO existe no cardápio, é alucinação: avisamos.
+    let precoInventado = false;
+    if (precosValidos.size) {
+      const matches = reply.match(/R\$\s?\d{1,4}(?:[.,]\d{2})?/g) || [];
+      for (const mch of matches) {
+        const n = Math.round(parseFloat(mch.replace(/[^\d.,]/g, '').replace('.', '').replace(',', '.')) * 100);
+        // aceita também valores "inteiros" (ex.: R$ 59 == 5900)
+        const nInt = Math.round(parseFloat(mch.replace(/[^\d.,]/g, '').replace(',', '.')) * 100);
+        if (!precosValidos.has(n) && !precosValidos.has(nInt)) { precoInventado = true; break; }
+      }
+    }
+    if (precoInventado) {
+      reply += '\n\n_(Ah, sobre os valores: deixa eu confirmar certinho com a equipe pra não te passar informação errada, tá? 🙏)_';
+    }
+
     // ---- Guarda no cache (respostas simples, sem reserva/botões) ----
-    if (podeCachear && !reservation && reply && !reply.includes('[BOTAO_') && !result.fallbackUsed) {
+    if (podeCachear && !reservation && !precoInventado && reply && !reply.includes('[BOTAO_') && !result.fallbackUsed) {
       db.from('ai_cache')
         .upsert({ restaurant_id: restaurant.id, question_key: questionKey, answer: reply }, { onConflict: 'restaurant_id,question_key' })
         .then(() => {});
