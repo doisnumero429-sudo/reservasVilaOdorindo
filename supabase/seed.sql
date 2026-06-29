@@ -63,8 +63,8 @@ begin
   -- grátis falhar). 'cheap_model' abaixo é grátis; confirme o nome na lista
   -- atual em openrouter.ai/models (filtro :free) e ajuste em /admin/ia se preciso.
   insert into public.ai_settings
-    (restaurant_id, enabled, mode, cascade_config, fallback_message, human_transfer_message)
-  select rid, true, 'hibrido',
+    (restaurant_id, enabled, mode, max_tokens, temperature, cascade_config, fallback_message, human_transfer_message)
+  select rid, true, 'hibrido', 700, 0.7,
     jsonb_build_object(
       'cheap_model',      'meta-llama/llama-3.3-70b-instruct:free',
       'mid_model',        'openai/gpt-4o-mini',

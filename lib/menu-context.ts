@@ -21,7 +21,7 @@ export async function buildMenuContext(
     db.from('menu_categories').select('id,name').eq('restaurant_id', restaurantId).eq('active', true).order('sort_order'),
     db
       .from('menu_items')
-      .select('name,variation,price,category_id,available,active,description,tags,allergens')
+      .select('name,variation,price,category_id,available,active,featured,description,accompaniments,serving_note,tags,allergens')
       .eq('restaurant_id', restaurantId)
       .eq('active', true),
   ]);
@@ -30,12 +30,17 @@ export async function buildMenuContext(
   const catName = new Map(categorias.map((c: any) => [c.id, c.name]));
   const todos = items || [];
 
+  // formato RICO: nome, variação, preço, categoria, descrição, o que acompanha e porção.
   const fmt = (i: any) => {
     const preco = i.price != null ? `R$ ${Number(i.price).toFixed(2)}` : 'consultar';
     const disp = i.available === false ? ' (indisponível)' : '';
     const variacao = i.variation ? ` (${i.variation})` : '';
-    const desc = i.description ? ` — ${i.description}` : '';
-    return `- ${i.name}${variacao} | ${preco} | ${catName.get(i.category_id) || ''}${disp}${desc}`;
+    let linha = `- ${i.name}${variacao} | ${preco} | ${catName.get(i.category_id) || ''}${disp}`;
+    if (i.description) linha += `\n    Descrição: ${i.description}`;
+    if (i.accompaniments && i.accompaniments.length) linha += `\n    Acompanha: ${i.accompaniments.join(', ')}`;
+    if (i.serving_note) linha += `\n    Serve: ${i.serving_note}`;
+    if (i.allergens && i.allergens.length) linha += `\n    Alérgenos: ${i.allergens.join(', ')}`;
+    return linha;
   };
 
   const q = norm(userMessage);
@@ -59,9 +64,13 @@ export async function buildMenuContext(
   const listaCategorias = categorias.map((c: any) => c.name).join(', ');
 
   if (scored.length === 0) {
-    // pergunta genérica: manda só as categorias (a IA pergunta o que a pessoa quer)
-    return `CATEGORIAS DO CARDÁPIO: ${listaCategorias}\n\n(Se o cliente perguntar sobre uma categoria ou prato específico, peça o nome para eu trazer os detalhes.)`;
+    // pergunta genérica: mostra os DESTAQUES (com detalhes) para a Lorena recomendar bem.
+    const destaques = todos.filter((i: any) => i.featured).slice(0, 12);
+    const bloco = destaques.length
+      ? `\n\nDESTAQUES / MAIS PEDIDOS (use para recomendar com riqueza):\n${destaques.map(fmt).join('\n')}`
+      : '';
+    return `CATEGORIAS DO CARDÁPIO: ${listaCategorias}${bloco}\n\n(Se o cliente citar uma categoria ou prato, eu trago os detalhes completos.)`;
   }
 
-  return `CATEGORIAS DO CARDÁPIO: ${listaCategorias}\n\nITENS RELEVANTES PARA ESTA PERGUNTA:\n${scored.map(fmt).join('\n')}`;
+  return `CATEGORIAS DO CARDÁPIO: ${listaCategorias}\n\nITENS RELEVANTES (com detalhes — use tudo para responder com riqueza):\n${scored.map(fmt).join('\n')}`;
 }

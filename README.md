@@ -55,6 +55,7 @@ Abra `http://localhost:3000` (site) e `http://localhost:3000/admin/login` (admin
    **todo o cardápio** (383 itens) para o banco. Clique **Run**.
 5. Rode `supabase/migration_nivel1.sql` (cria o cache da Lorena — economia de IA). **Run**.
    Em seguida rode `supabase/migration_nivel3.sql` (base de conhecimento + feedback). **Run**.
+   E `supabase/migration_menu_rico.sql` (completa o cardápio com acompanhamentos, porção e destaques). **Run**.
 6. (Opcional) Para usar o **upload de imagens** (tela Personalização), rode também
    `supabase/storage.sql`. Clique **Run**.
 
