@@ -59,9 +59,11 @@ begin
   where not exists (select 1 from public.email_settings where restaurant_id = rid);
 
   -- ---- 5. Configurações da IA (Lorena) + cascata OpenRouter ----------
+  -- Por padrão a Lorena começa no modo GRÁTIS (regras locais, sem custo de IA).
+  -- Troque para 'hibrido' ou 'openrouter' na tela /admin/ia quando quiser ativar a IA paga.
   insert into public.ai_settings
     (restaurant_id, enabled, mode, cascade_config, fallback_message, human_transfer_message)
-  select rid, true, 'hibrido',
+  select rid, true, 'local',
     jsonb_build_object(
       'cheap_model',  'openai/gpt-4o-mini',
       'mid_model',    'openai/gpt-4o-mini',

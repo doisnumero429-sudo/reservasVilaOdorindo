@@ -51,6 +51,8 @@ Abra `http://localhost:3000` (site) e `http://localhost:3000/admin/login` (admin
 1. No Supabase, menu lateral: **SQL Editor** → **New query**.
 2. Abra o arquivo `supabase/schema.sql` deste projeto, **copie tudo** e cole. Clique **Run**.
 3. Faça o mesmo com `supabase/seed.sql` (dados iniciais do Villa Grill). Clique **Run**.
+4. (Opcional, recomendado) Faça o mesmo com `supabase/seed_menu.sql` para já trazer
+   **todo o cardápio** (383 itens) para o banco. Clique **Run**.
 
 Pronto: as 20 tabelas, as regras de segurança e os dados iniciais foram criados.
 
