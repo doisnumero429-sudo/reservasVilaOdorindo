@@ -1211,19 +1211,12 @@ async function responder(q){
   historico.push({role:'user',content:q});
   $('#status').textContent='digitando…';$('#status').classList.remove('online');showTyping(true);
 
+  // Todas as mensagens vão para a Lorena (backend). Reclamações/sugestões são
+  // conduzidas por ela de forma profissional e registradas no banco.
   let resposta;
-  const ultimos=historico.slice(-4).map(m=>m.content);
-  const fatia=fatiaRica(selecionaNicho(ultimos));
-  const respRec=respostaReclamacao(q);
-
-  if(respRec){
-    await sleep(380);
-    resposta=respRec;
-  }else{
-    const ia=await respostaAnthropic(historico.slice(-10), fatia);
-    if(ia&&!ia.erro) resposta=ia;
-    else { await sleep(500); resposta=respostaDemo(q,historico); }
-  }
+  const ia=await respostaAnthropic(historico.slice(-10), null);
+  if(ia&&!ia.erro) resposta=ia;
+  else { await sleep(500); resposta=respostaDemo(q,historico); }
 
   showTyping(false);$('#status').textContent='online';$('#status').classList.add('online');
 

@@ -1,41 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin, getRestaurant } from '@/lib/supabase';
-import { sendComplaintEmail } from '@/lib/notifications';
+import { getRestaurant } from '@/lib/supabase';
+import { createComplaint } from '@/lib/complaints';
 
 export const runtime = 'nodejs';
 
-/** POST /api/complaints — registra uma reclamação (vinda do chat) e avisa por e-mail. */
+/** POST /api/complaints — registra uma reclamação/sugestão e avisa por e-mail. */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const message = (body.message || body.relato || '').trim();
-    if (!message) {
-      return NextResponse.json({ ok: false, error: 'Relato vazio.' }, { status: 400 });
-    }
-    const db = supabaseAdmin();
+    if (!message) return NextResponse.json({ ok: false, error: 'Relato vazio.' }, { status: 400 });
+
     const restaurant = await getRestaurant();
-
-    const { data: complaint, error } = await db
-      .from('complaints')
-      .insert({
-        restaurant_id: restaurant.id,
-        customer_name: body.nome || body.customer_name || null,
-        customer_whatsapp: body.whatsapp || body.customer_whatsapp || null,
-        message,
-        status: 'nova',
-        email_status: 'preparado',
-      })
-      .select()
-      .single();
-    if (error) throw error;
-
-    sendComplaintEmail(restaurant.id, complaint)
-      .then((r) =>
-        db.from('complaints').update({ email_status: r.ok ? 'enviado' : 'erro' }).eq('id', complaint.id)
-      )
-      .catch(() => {});
-
-    return NextResponse.json({ ok: true, id: complaint.id });
+    const res = await createComplaint({
+      restaurantId: restaurant.id,
+      nome: body.nome || body.customer_name,
+      whatsapp: body.whatsapp || body.customer_whatsapp,
+      message,
+      tipo: body.tipo === 'sugestao' ? 'sugestao' : 'reclamacao',
+    });
+    if (!res.ok) return NextResponse.json(res, { status: 400 });
+    return NextResponse.json({ ok: true, id: res.complaint.id });
   } catch (err: any) {
     return NextResponse.json({ ok: false, error: String(err?.message || err) }, { status: 500 });
   }
