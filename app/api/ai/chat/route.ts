@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin, getRestaurant } from '@/lib/supabase';
 import { cascadeChat, ChatMessage } from '@/lib/openrouter';
 import { buildMenuContext } from '@/lib/menu-context';
-import { stepFeedback, confirmSummary, detectFeedbackIntent, bentoClosingMessage, buildWhatsappMessage } from '@/lib/feedback-engine';
+import { stepFeedback, confirmSummary, detectFeedbackIntent, bentoClosingMessage, buildWhatsappMessage, buildSummary } from '@/lib/feedback-engine';
 import { registerFeedback } from '@/lib/feedback-persist';
 
 export const runtime = 'nodejs';
@@ -60,6 +60,13 @@ export async function POST(req: NextRequest) {
     }
     if ((fbSession && fbSession.active) || detectFeedbackIntent(userMessage)) {
       const r = stepFeedback(fbSession && fbSession.active ? fbSession : null, userMessage, { uploadsEnabled: false });
+      // Ao chegar no resumo, lapida o relato (português correto, fiel, sem inventar).
+      if (r.ui?.summaryText) {
+        await polirRelato(db, restaurant.id, r.session);
+        r.session.summary = buildSummary(r.session);
+        r.session.whatsappMessage = buildWhatsappMessage(r.session);
+        r.ui.summaryText = r.session.summary;
+      }
       return NextResponse.json({ ok: true, feedback: true, reply: r.reply, ui: r.ui, feedbackSession: r.session });
     }
 
@@ -262,6 +269,31 @@ ${cardapioTxt}`;
     return NextResponse.json({ ok: true, reply, step: result.step, model: result.model, log_id: logId, cascadeError: result.error || null });
   } catch (err: any) {
     return NextResponse.json({ ok: false, error: String(err?.message || err) }, { status: 500 });
+  }
+}
+
+/**
+ * Reescreve o relato do cliente em português correto e organizado, FIEL ao que ele disse,
+ * sem inventar nada. Usa o modelo da cascata (barato, temperatura baixa).
+ */
+async function polirRelato(db: any, restaurantId: string, s: any) {
+  const bruto = (s.originalMessages || []).join(' ').trim();
+  if (!bruto) return;
+  try {
+    const { data: ai } = await db.from('ai_settings').select('*').eq('restaurant_id', restaurantId).maybeSingle();
+    if (!ai || ai.enabled === false || ai.mode === 'local') { s.relatoOrganizado = bruto; return; }
+    const sys =
+      'Você reescreve o relato de um cliente para registro interno de um restaurante. Reescreva em português CORRETO (ortografia e pontuação), claro e organizado, em 1ª pessoa, mantendo TOTAL fidelidade ao que o cliente disse. NÃO invente fatos, datas, valores ou detalhes. NÃO acrescente opinião sua. Mantenha o sentido e o tom do cliente, apenas mais educado e legível. Responda APENAS com o texto reescrito, sem aspas e sem comentários.';
+    const result = await cascadeChat(
+      [
+        { role: 'system', content: sys },
+        { role: 'user', content: bruto },
+      ],
+      { ...ai, max_tokens: 300, temperature: 0.2 }
+    );
+    s.relatoOrganizado = (result.text && result.text.trim()) || bruto;
+  } catch {
+    s.relatoOrganizado = bruto;
   }
 }
 

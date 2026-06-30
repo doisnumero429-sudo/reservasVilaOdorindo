@@ -50,6 +50,7 @@ export type FeedbackSession = {
   uploadOffered: boolean;
   askedExpectation: boolean;
   summary: string | null;
+  relatoOrganizado: string | null;
   whatsappMessage: string | null;
   protocol: string | null;
   status: string | null;
@@ -287,7 +288,7 @@ export function buildSummary(s: FeedbackSession): string {
   add('Prato/item', s.productOrDish);
   add('Prioridade', s.priority);
   if (s.attachments.length) linhas.push(`Imagens anexadas: ${s.attachments.length}`);
-  const relato = s.originalMessages.join(' ').trim();
+  const relato = (s.relatoOrganizado || s.originalMessages.join(' ')).trim();
   let out = linhas.join('\n');
   out += `\n\nRelato organizado:\n${relato}`;
   out += `\n\nO que você espera:\n${s.customerExpectation || 'Apenas registrar a ocorrência para conhecimento da gerência.'}`;
@@ -317,7 +318,7 @@ export function buildWhatsappMessage(s: FeedbackSession): string {
   const partes: string[] = [];
   partes.push(`Olá! Meu nome é ${nome}.`);
   partes.push(`Gostaria de registrar ${tipo} sobre o ${UNIDADE}.`);
-  const relato = s.originalMessages.join(' ').trim();
+  const relato = (s.relatoOrganizado || s.originalMessages.join(' ')).trim();
   if (relato) partes.push(relato);
   const ctx: string[] = [];
   if (s.occurredDate || s.period || s.occurredTime) ctx.push(`Isso foi ${[s.occurredDate, s.period, s.occurredTime].filter(Boolean).join(', ')}.`);
@@ -341,7 +342,7 @@ export function newSession(): FeedbackSession {
     occurredDate: null, occurredTime: null, period: null, channel: null, tableNumber: null,
     tableReference: null, paymentMethod: null, chargedAmount: null, expectedAmount: null,
     productOrDish: null, staffReference: null, customerExpectation: null, attachments: [],
-    uploadOffered: false, askedExpectation: false, summary: null, whatsappMessage: null,
+    uploadOffered: false, askedExpectation: false, summary: null, relatoOrganizado: null, whatsappMessage: null,
     protocol: null, status: 'rascunho', createdAt: now, updatedAt: now,
   };
 }
@@ -434,6 +435,17 @@ function offerUploadOrSummarize(s: FeedbackSession, uploadsEnabled = true): Step
 }
 
 function summarize(s: FeedbackSession): StepResult {
+  // Reavalia a categoria com o RELATO COMPLETO (a 1ª mensagem pode ter sido vaga).
+  const textoCompleto = s.originalMessages.join(' ');
+  if (textoCompleto.trim().split(/\s+/).length >= 3) {
+    const rule = classifyCategory(textoCompleto);
+    if (rule) {
+      s.category = rule.category;
+      s.type = rule.type;
+      s.priority = priorityFor(rule, textoCompleto);
+      s.customerExpectation = rule.expectation;
+    }
+  }
   s.summary = buildSummary(s);
   s.whatsappMessage = buildWhatsappMessage(s);
   s.stage = 'await_confirm';
