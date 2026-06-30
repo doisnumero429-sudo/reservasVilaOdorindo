@@ -115,14 +115,23 @@ Entre no painel → **E-mails e Alertas** (`/admin/emails`).
 - Seções: **Novas reservas**, **Reclamações**, **Relatório diário**. Em cada uma,
   adicione os e-mails, ligue/desligue o aviso e use **Enviar teste**.
 
-### Remetente técnico
-O sistema precisa de um "carteiro" para enviar (o **Resend**). Isso **não é uma caixa
-de e-mail nova** — é só quem despacha os avisos.
+### Remetente técnico (quem despacha os e-mails)
+Escolha **UMA** das opções:
 
-1. Crie conta em <https://resend.com> → **API Keys** → crie uma chave → coloque em
-   `RESEND_API_KEY`.
-2. Para testes, pode usar `EMAIL_FROM=onboarding@resend.dev`. Para produção, verifique
-   o seu domínio no Resend e use um e-mail desse domínio.
+**Opção A — Gmail (recomendado se você NÃO tem domínio).** Envia do seu Gmail para
+qualquer e-mail, de graça, sem domínio:
+1. Na sua Conta Google, ative a **verificação em 2 etapas**.
+2. Em **Conta Google → Segurança → Senhas de app**, crie uma senha de app (16 letras).
+3. Nas variáveis, defina: `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=465`,
+   `SMTP_USER=seuemail@gmail.com`, `SMTP_PASS=<a senha de app>`,
+   `EMAIL_FROM=seuemail@gmail.com`.
+
+**Opção B — Resend.** Crie a chave em <https://resend.com> → `RESEND_API_KEY`. Sem um
+domínio verificado, o Resend só entrega no e-mail da sua própria conta — para enviar a
+outros, verifique um domínio em resend.com/domains.
+
+> O sistema escolhe sozinho: se as variáveis `SMTP_*` estiverem preenchidas, usa o Gmail;
+> senão, usa o Resend.
 
 ### Testar
 Em **E-mails e Alertas**, clique **Enviar teste**. Se chegar na caixa, está funcionando.

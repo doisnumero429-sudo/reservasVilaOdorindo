@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import { supabaseAdmin } from './supabase';
 
 type SendArgs = {
@@ -12,62 +13,80 @@ type SendArgs = {
   fromName?: string;
 };
 
+function smtpConfigured() {
+  return !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+}
+
 /**
- * Envia um e-mail pelo Resend e grava em email_logs.
- * O Resend é apenas o "carteiro": os avisos chegam nos e-mails cadastrados.
+ * Envia um e-mail e grava em email_logs.
+ * Dois modos (escolhido automaticamente):
+ *  - SMTP (ex.: Gmail com senha de app): envia do SEU e-mail para QUALQUER destinatário,
+ *    de graça e sem domínio. Usado quando SMTP_HOST/SMTP_USER/SMTP_PASS estão definidos.
+ *  - Resend: usado quando há RESEND_API_KEY (exige domínio verificado para outros destinatários).
  */
 export async function sendEmail(args: SendArgs) {
   const db = supabaseAdmin();
-  const apiKey = process.env.RESEND_API_KEY;
-  const fromEmail = args.fromEmail || process.env.EMAIL_FROM || 'onboarding@resend.dev';
   const fromName = args.fromName || process.env.EMAIL_FROM_NAME || 'Villa Grill';
+  // No SMTP/Gmail o remetente precisa ser a própria conta autenticada.
+  const fromEmail =
+    args.fromEmail ||
+    (smtpConfigured() ? process.env.SMTP_USER! : process.env.EMAIL_FROM || 'onboarding@resend.dev');
   const from = `${fromName} <${fromEmail}>`;
 
   if (!args.to || args.to.length === 0) {
     return { ok: false, skipped: true, reason: 'Nenhum e-mail destinatário cadastrado.' };
   }
 
-  if (!apiKey) {
-    await db.from('email_logs').insert({
+  const log = (status: string, extra: Record<string, any> = {}) =>
+    db.from('email_logs').insert({
       restaurant_id: args.restaurantId,
       type: args.type,
       recipients: args.to,
       subject: args.subject,
-      status: 'erro',
-      error_message: 'RESEND_API_KEY não configurada.',
+      status,
+      ...extra,
     });
-    return { ok: false, reason: 'RESEND_API_KEY não configurada.' };
-  }
 
-  const resend = new Resend(apiKey);
   try {
-    const { data, error } = await resend.emails.send({
-      from,
-      to: args.to,
-      subject: args.subject,
-      html: args.html,
-      text: args.text,
-    });
-    if (error) throw new Error(error.message || 'Falha no envio.');
+    // ---- Modo SMTP (Gmail e afins) ----
+    if (smtpConfigured()) {
+      const port = Number(process.env.SMTP_PORT || 465);
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port,
+        secure: port === 465, // 465 = SSL; 587 = STARTTLS
+        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+      });
+      const info = await transporter.sendMail({
+        from,
+        to: args.to.join(', '),
+        subject: args.subject,
+        html: args.html,
+        text: args.text,
+      });
+      await log('enviado', { provider_message_id: info.messageId });
+      return { ok: true, id: info.messageId };
+    }
 
-    await db.from('email_logs').insert({
-      restaurant_id: args.restaurantId,
-      type: args.type,
-      recipients: args.to,
-      subject: args.subject,
-      status: 'enviado',
-      provider_message_id: data?.id,
-    });
-    return { ok: true, id: data?.id };
+    // ---- Modo Resend ----
+    if (process.env.RESEND_API_KEY) {
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      const { data, error } = await resend.emails.send({
+        from,
+        to: args.to,
+        subject: args.subject,
+        html: args.html,
+        text: args.text,
+      });
+      if (error) throw new Error(error.message || 'Falha no envio.');
+      await log('enviado', { provider_message_id: data?.id });
+      return { ok: true, id: data?.id };
+    }
+
+    await log('erro', { error_message: 'Nenhum provedor de e-mail configurado (defina SMTP_* ou RESEND_API_KEY).' });
+    return { ok: false, reason: 'Nenhum provedor de e-mail configurado.' };
   } catch (err: any) {
-    await db.from('email_logs').insert({
-      restaurant_id: args.restaurantId,
-      type: args.type,
-      recipients: args.to,
-      subject: args.subject,
-      status: 'erro',
-      error_message: String(err?.message || err),
-    });
+    await log('erro', { error_message: String(err?.message || err) });
     return { ok: false, reason: String(err?.message || err) };
   }
 }
