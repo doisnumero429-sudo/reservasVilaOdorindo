@@ -76,7 +76,7 @@ export function norm(s: string) {
 const TRIGGERS = [
   'quero reclamar', 'reclam', 'tenho uma reclamacao', 'sugest', 'sugiro', 'seria legal', 'poderia ter',
   'voces podiam', 'voces poderiam', 'colocar mais', 'fica a dica', 'feedback', 'aconteceu um problema',
-  'tive um problema', 'deu problema', 'fui mal atendido', 'mal atendido', 'atendimento ruim',
+  'tive um problema', 'deu problema', 'problema', 'relatar problema', 'fui mal atendido', 'mal atendido', 'atendimento ruim',
   'atendimento horrivel', 'mal educad', 'sem educacao', 'grosso', 'grosseiro', 'ninguem me atendeu',
   'ninguem atendeu', 'xingou', 'xingamento', 'discrimina', 'humilhou', 'comida fria', 'veio fria',
   'estava fria', 'comida salgada', 'salgad', 'sem gosto', 'sem sabor', 'carne dura', 'estava dura',
@@ -348,7 +348,8 @@ export function newSession(): FeedbackSession {
 
 const ACOLHIDA = 'Poxa, sinto muito por isso. Quero entender direitinho para te ajudar da melhor forma.\n\nMe conta o que aconteceu, pode falar do seu jeito.';
 
-export function stepFeedback(session: FeedbackSession | null, userMessage: string): StepResult {
+export function stepFeedback(session: FeedbackSession | null, userMessage: string, opts: { uploadsEnabled?: boolean } = {}): StepResult {
+  const uploadsEnabled = opts.uploadsEnabled !== false;
   let s = session && session.active ? session : newSession();
   s.latestUserMessage = userMessage;
   s.updatedAt = new Date().toISOString();
@@ -397,7 +398,7 @@ export function stepFeedback(session: FeedbackSession | null, userMessage: strin
     const wa = looksLikeWhatsapp(userMessage);
     if (!wa) return { session: s, reply: 'Esse número parece estar incompleto. Pode me passar um WhatsApp válido, por favor? (com DDD)', ui };
     s.customerWhatsapp = wa;
-    return offerUploadOrSummarize(s);
+    return offerUploadOrSummarize(s, uploadsEnabled);
   }
 
   // Ofereceu upload — cliente respondeu (pulou ou seguiu)
@@ -406,18 +407,22 @@ export function stepFeedback(session: FeedbackSession | null, userMessage: strin
     return summarize(s);
   }
 
-  // Confirmação do resumo
+  // Confirmação do resumo — texto livre é tratado como correção e incorporado
   if (s.stage === 'await_confirm') {
-    return summarize(s); // o app deve usar os botões; texto livre re-mostra o resumo
+    if (userMessage && userMessage.trim().length > 1) {
+      s.originalMessages.push(userMessage.trim());
+      extract(s, userMessage);
+    }
+    return summarize(s);
   }
 
   // fallback
   return summarize(s);
 }
 
-function offerUploadOrSummarize(s: FeedbackSession): StepResult {
+function offerUploadOrSummarize(s: FeedbackSession, uploadsEnabled = true): StepResult {
   const rule = RULES.find((r) => r.category === s.category);
-  if (rule?.upload && !s.uploadOffered) {
+  if (uploadsEnabled && rule?.upload && !s.uploadOffered) {
     s.uploadOffered = true;
     s.stage = 'offer_upload';
     const ui: UiDirective = { upload: { label: rule.upload.label, hint: rule.upload.hint, kind: rule.upload.kind, paymentWarning: !!rule.upload.payment } };

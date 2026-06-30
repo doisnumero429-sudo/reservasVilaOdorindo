@@ -7,7 +7,8 @@ import { supabaseBrowser } from '@/lib/supabase-browser';
 const LINKS = [
   ['/admin', 'Painel'],
   ['/admin/reservas', 'Reservas'],
-  ['/admin/reclamacoes', 'Reclamações'],
+  ['/admin/feedback', 'Reclamações e Sugestões'],
+  ['/admin/reclamacoes', 'Reclamações (antigas)'],
   ['/admin/bloqueios', 'Bloqueios'],
   ['/admin/eventos', 'Eventos'],
   ['/admin/cardapio', 'Cardápio'],

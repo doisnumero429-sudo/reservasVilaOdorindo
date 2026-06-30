@@ -1204,6 +1204,7 @@ function badgeText(){return cfg.provider==='anthropic'?'IA':cfg.provider==='demo
 const historico=[]; let pending=false;
 let DELIVERY_URL='https://villa-grill-restaurante.goomer.app/'; // editável no painel (Configurações)
 let lastLogId=null; // id do log da última resposta da IA (para o feedback 👍/👎)
+let feedbackSession=null; // sessão do fluxo de reclamação/sugestão do Bento
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function responder(q){
   if(pending)return; pending=true;
@@ -1211,14 +1212,20 @@ async function responder(q){
   historico.push({role:'user',content:q});
   $('#status').textContent='digitando…';$('#status').classList.remove('online');showTyping(true);
 
-  // Todas as mensagens vão para a Lorena (backend). Reclamações/sugestões são
-  // conduzidas por ela de forma profissional e registradas no banco.
-  let resposta;
-  const ia=await respostaAnthropic(historico.slice(-10), null);
-  if(ia&&!ia.erro) resposta=ia;
-  else { await sleep(500); resposta=respostaDemo(q,historico); }
+  // Chama o backend (inclui a sessão do Bento, se houver uma reclamação em andamento)
+  const payload={messages:historico.slice(-10).map(m=>({role:m.role,content:m.content}))};
+  if(feedbackSession) payload.feedbackSession=feedbackSession;
+  let data=null;
+  try{ const r=await fetch('/api/ai/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); data=await r.json(); }catch(e){ data=null; }
 
   showTyping(false);$('#status').textContent='online';$('#status').classList.add('online');
+
+  // Fluxo do Bento (reclamações/sugestões) — conduzido pelo motor
+  if(data&&data.ok&&data.feedback){ handleFeedbackResponse(data); pending=false; return; }
+
+  let resposta;
+  if(data&&data.ok&&data.reply){ resposta=data.reply; lastLogId=data.log_id||null; }
+  else { await sleep(400); resposta=respostaDemo(q,historico); }
 
   /* -- intercepta tokens especiais da IA -- */
   let extraButtons=[];
@@ -1249,6 +1256,68 @@ async function responder(q){
   sndIn();
   historico.push({role:'assistant',content:resposta});
   pending=false;
+}
+
+/* ---------- Fluxo do Bento: reclamações/sugestões ---------- */
+function handleFeedbackResponse(data){
+  feedbackSession=data.feedbackSession||feedbackSession;
+  const ui=data.ui||{};
+  if(data.reply){ addMsg(data.reply,'in'); sndIn(); historico.push({role:'assistant',content:data.reply}); }
+
+  if(data.openWhatsapp && data.whatsappNumber){
+    const url='https://wa.me/'+data.whatsappNumber+'?text='+encodeURIComponent(data.whatsappMessage||'');
+    addActionButtons([{type:'whatsapp',label:'Abrir WhatsApp do Villa Grill',sub:'Sua mensagem já vai pronta',url}]);
+    try{ window.open(url,'_blank'); }catch(e){}
+    feedbackSession=null; return;
+  }
+  if(ui.summaryText){
+    addFeedbackSummary(ui.summaryText);
+    addChoiceButtons([
+      {label:'Está certo',sub:'Seguir para o envio',gold:true,act:()=>fbAction('confirm')},
+      {label:'Quero corrigir algo',sub:'Ajustar antes de enviar',act:()=>fbAction('correct')},
+    ]);
+    return;
+  }
+  if(ui.finalChoice){
+    addChoiceButtons([
+      {label:'Registrar pelo Bento',sub:'Enviar para análise da gerência',gold:true,act:()=>fbAction('register')},
+      {label:'Enviar minha reclamação pelo WhatsApp',sub:'Continuar com um atendente do Villa Grill',act:()=>fbAction('whatsapp')},
+    ]);
+    return;
+  }
+  if(data.done) feedbackSession=null;
+}
+async function fbAction(action){
+  if(pending)return; pending=true;
+  $('#status').textContent='digitando…';$('#status').classList.remove('online');showTyping(true);
+  let data=null;
+  try{
+    const r=await fetch('/api/ai/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:'.'}],feedbackSession,action})});
+    data=await r.json();
+  }catch(e){ data=null; }
+  showTyping(false);$('#status').textContent='online';$('#status').classList.add('online');
+  if(data&&data.ok&&data.feedback){ handleFeedbackResponse(data); }
+  pending=false;
+}
+function addChoiceButtons(opts){
+  const wrap=document.createElement('div'); wrap.className='msg-line in-line';
+  const inner=document.createElement('div');
+  inner.style.cssText='display:flex;flex-direction:column;gap:8px;margin-left:44px;width:calc(100% - 44px)';
+  opts.forEach(o=>{
+    const b=document.createElement('button'); b.type='button';
+    b.style.cssText='text-align:left;padding:12px 14px;border-radius:14px;border:1px solid rgba(217,164,65,.35);cursor:pointer;font-family:inherit;transition:transform .1s;'+(o.gold?'background:linear-gradient(180deg,#F0CE84,#D9A441);color:#1a1206;border:0;':'background:rgba(244,237,227,.05);color:#F4EDE3;');
+    b.innerHTML='<div style="font-weight:600;font-size:.95rem">'+o.label+'</div>'+(o.sub?'<div style="font-size:.78rem;opacity:.82;margin-top:2px">'+o.sub+'</div>':'');
+    b.addEventListener('click',()=>{ if(b.disabled)return; wrap.querySelectorAll('button').forEach(x=>x.disabled=true); wrap.style.opacity='.6'; o.act(); });
+    inner.appendChild(b);
+  });
+  wrap.appendChild(inner); chat.insertBefore(wrap,typing); chat.scrollTop=chat.scrollHeight;
+}
+function addFeedbackSummary(text){
+  const m=document.createElement('div'); m.className='msg in';
+  m.innerHTML='<span class="body" style="white-space:pre-wrap;font-size:.85rem;line-height:1.5">'+text.replace(/</g,'&lt;')+'</span><span class="time">'+now()+'</span>';
+  const row=document.createElement('div'); row.className='msg-line in-line';
+  const av=document.createElement('img'); av.className='msg-avatar-mini'; av.src=LORENA_AVATAR_SRC; av.alt='';
+  row.appendChild(av); row.appendChild(m); chat.insertBefore(row,typing); chat.scrollTop=chat.scrollHeight;
 }
 
 /* ---------- UI do chat ---------- */

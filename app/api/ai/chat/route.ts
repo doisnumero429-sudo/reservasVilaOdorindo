@@ -2,11 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin, getRestaurant } from '@/lib/supabase';
 import { cascadeChat, ChatMessage } from '@/lib/openrouter';
 import { buildMenuContext } from '@/lib/menu-context';
-import { createComplaint } from '@/lib/complaints';
+import { stepFeedback, confirmSummary, detectFeedbackIntent, bentoClosingMessage, buildWhatsappMessage } from '@/lib/feedback-engine';
+import { registerFeedback } from '@/lib/feedback-persist';
 
 export const runtime = 'nodejs';
-
-const COMPLAINT_MARK = '[[RECLAMACAO]]';
 
 function norm(s: string) {
   return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim();
@@ -33,6 +32,37 @@ export async function POST(req: NextRequest) {
 
     const db = supabaseAdmin();
     const restaurant = await getRestaurant();
+
+    // ===================================================================
+    //  FLUXO DE RECLAMAÇÕES/SUGESTÕES (Bento) — motor determinístico
+    // ===================================================================
+    const fbSession = body.feedbackSession || null;
+    const action = body.action || null;
+    const waOficial = (restaurant.whatsapp_number || '').replace(/\D/g, '');
+
+    if (action === 'register' && fbSession) {
+      const res = await registerFeedback(restaurant.id, fbSession, 'bento');
+      const reply = res.ok
+        ? bentoClosingMessage(res.protocolo!)
+        : 'Tive um probleminha para registrar agora. Pode tentar de novo em instantes?';
+      return NextResponse.json({ ok: true, feedback: true, done: true, reply, feedbackSession: { ...fbSession, active: false, stage: 'done_bento', protocol: res.ok ? res.protocolo : null } });
+    }
+    if (action === 'whatsapp' && fbSession) {
+      const msg = fbSession.whatsappMessage || buildWhatsappMessage(fbSession);
+      return NextResponse.json({ ok: true, feedback: true, done: true, openWhatsapp: true, whatsappNumber: waOficial, whatsappMessage: msg, reply: 'Perfeito! Vou abrir o WhatsApp com sua mensagem já organizada. 👇', feedbackSession: { ...fbSession, active: false, stage: 'done_whatsapp' } });
+    }
+    if (action === 'confirm' && fbSession) {
+      const r = confirmSummary(fbSession);
+      return NextResponse.json({ ok: true, feedback: true, reply: r.reply, ui: r.ui, feedbackSession: r.session });
+    }
+    if (action === 'correct' && fbSession) {
+      return NextResponse.json({ ok: true, feedback: true, reply: 'Claro. Me fala o que você quer corrigir que eu ajusto antes de enviar.', ui: {}, feedbackSession: { ...fbSession, stage: 'await_confirm' } });
+    }
+    if ((fbSession && fbSession.active) || detectFeedbackIntent(userMessage)) {
+      const r = stepFeedback(fbSession && fbSession.active ? fbSession : null, userMessage, { uploadsEnabled: false });
+      return NextResponse.json({ ok: true, feedback: true, reply: r.reply, ui: r.ui, feedbackSession: r.session });
+    }
+
     const tz = restaurant.timezone || 'America/Sao_Paulo';
     const hojeISO = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
     const diaSemana = new Intl.DateTimeFormat('pt-BR', { timeZone: tz, weekday: 'long' }).format(new Date());
@@ -162,15 +192,7 @@ Pratos com foto disponível: ${comFoto || 'nenhum no momento'}.`;
     const instrucaoReserva = `
 RESERVAS: você NÃO faz a reserva pelo chat e NÃO coleta os dados da reserva. Quando o cliente quiser reservar (ou perguntar como faz para reservar), responda de forma calorosa, explique em uma frase que é rapidinho preencher, e TERMINE a mensagem com o token [BOTAO_RESERVA] — ele abre a tela de reserva para o cliente preencher. Hoje é ${hojeISO} (${diaSemana}); se a data que ele citar estiver bloqueada ou em evento que bloqueia reservas (veja DISPONIBILIDADE), avise com gentileza antes de mandar o botão. Grupos muito grandes: oriente falar com a equipe pelo WhatsApp ([BOTAO_WHATSAPP]).`;
 
-    const protocoloReclamacao = `
-RECLAMAÇÕES E SUGESTÕES (conduza com MÁXIMO profissionalismo e empatia):
-- Se o cliente relatar um problema, insatisfação, reclamação ou uma sugestão, acolha com cordialidade e seriedade. NUNCA prometa solução, desconto, ressarcimento ou retorno imediato, e nunca minimize o ocorrido.
-- 1º) Procure ENTENDER o ocorrido. Se o relato estiver vago, peça com delicadeza os detalhes essenciais (o que houve, quando).
-- 2º) Peça o NOME e o WHATSAPP do cliente, explicando que é para a equipe responsável entrar em contato e dar o devido retorno.
-- 3º) Pergunte se ele CONFIRMA o registro da reclamação (ou sugestão).
-- Só quando o cliente CONFIRMAR e você já tiver o relato + nome + WhatsApp, escreva uma frase profissional de encerramento e, na ÚLTIMA LINHA, escreva APENAS isto (nada depois):
-${COMPLAINT_MARK}{"nome":"...","whatsapp":"...","mensagem":"<resumo claro do relato>","tipo":"reclamacao"}
-Use "sugestao" no campo tipo se for uma sugestão. NÃO mostre esse código enquanto faltar algum dado ou a confirmação do cliente.`;
+    // (Reclamações/sugestões são tratadas pelo motor do Bento, antes de chegar aqui.)
 
     const contexto = `DADOS DA CASA:
 ${restaurant.name} | Endereço: ${restaurant.address || ''} | WhatsApp: ${restaurant.whatsapp_number || ''} | Instagram: ${restaurant.instagram_handle || ''}
@@ -188,7 +210,7 @@ ${faqTxt ? `\nBASE DE CONHECIMENTO DA CASA (use estas respostas oficiais quando 
 ${cardapioTxt}`;
 
     const messages: ChatMessage[] = [
-      { role: 'system', content: baseInstrucoes + '\n' + comportamento + '\n' + instrucaoReserva + '\n' + protocoloReclamacao },
+      { role: 'system', content: baseInstrucoes + '\n' + comportamento + '\n' + instrucaoReserva },
       { role: 'system', content: contexto },
       ...incoming.slice(-12),
     ];
@@ -202,36 +224,6 @@ ${cardapioTxt}`;
 
     const result = await cascadeChat(messages, ai || {});
     let reply = result.text || '';
-
-    // ---- Registro PROFISSIONAL de reclamação/sugestão (após confirmação do cliente) ----
-    const cMark = reply.indexOf(COMPLAINT_MARK);
-    if (cMark >= 0) {
-      const lead = reply.slice(0, cMark).trim();
-      const jsonRaw = reply.slice(cMark + COMPLAINT_MARK.length).trim();
-      const m = jsonRaw.match(/\{[\s\S]*\}/);
-      try {
-        const dados = m ? JSON.parse(m[0]) : null;
-        if (dados && (dados.mensagem || '').trim()) {
-          const res = await createComplaint({
-            restaurantId: restaurant.id,
-            nome: dados.nome,
-            whatsapp: dados.whatsapp,
-            message: dados.mensagem,
-            tipo: dados.tipo === 'sugestao' ? 'sugestao' : 'reclamacao',
-          });
-          const ehSugestao = dados.tipo === 'sugestao';
-          if (res.ok) {
-            reply = `${lead ? lead + '\n\n' : ''}Registrei aqui com todo o cuidado${dados.nome ? ', ' + String(dados.nome).split(' ')[0] : ''}. ${ehSugestao ? 'Obrigada pela sugestão' : 'Sinto muito pelo ocorrido'} — encaminhei à equipe responsável, que vai entrar em contato pelo WhatsApp informado. Agradeço demais por nos contar. 🙏`;
-          } else {
-            reply = `${lead ? lead + '\n\n' : ''}Consegui anotar seu relato. Vou encaminhar à equipe responsável, tá? Obrigada pela paciência. 🙏`;
-          }
-        } else {
-          reply = lead || 'Pode me confirmar seu nome e WhatsApp para eu registrar, por favor?';
-        }
-      } catch {
-        reply = lead || 'Pode me confirmar seu nome e WhatsApp para eu registrar, por favor?';
-      }
-    }
 
     // ---- Troca [[FOTO:nome]] pela imagem real do banco (sem alucinar URL) ----
     reply = reply
