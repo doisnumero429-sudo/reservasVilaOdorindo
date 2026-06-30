@@ -9,7 +9,7 @@ const SLOTS: { type: string; label: string; hint: string }[] = [
   { type: 'logo_impressao', label: 'Logo de impressão', hint: 'Versão para a comanda 80mm (preto sólido funciona melhor).' },
   { type: 'qr_code', label: 'QR Code', hint: 'Aponta para o Instagram/WhatsApp.' },
   { type: 'fundo', label: 'Fundo', hint: 'Imagem de fundo do site.' },
-  { type: 'avatar_lorena', label: 'Avatar da Lorena', hint: 'Foto da atendente no chat.' },
+  { type: 'avatar_bento', label: 'Avatar do Bento', hint: 'Foto da atendente no chat.' },
   { type: 'mapa', label: 'Mapa dos setores', hint: 'Mapa usado na tela de reserva.' },
 ];
 

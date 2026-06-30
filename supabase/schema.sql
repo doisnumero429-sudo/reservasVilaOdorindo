@@ -499,7 +499,7 @@ begin
 end $$;
 
 -- =====================================================================
---  21. ai_cache  (cache de respostas da Lorena — economia de IA)
+--  21. ai_cache  (cache de respostas do Bento — economia de IA)
 -- =====================================================================
 create table if not exists public.ai_cache (
   id uuid primary key default gen_random_uuid(),
@@ -517,7 +517,7 @@ create policy "admin_all_ai_cache" on public.ai_cache
   for all using (public.is_admin(restaurant_id)) with check (public.is_admin(restaurant_id));
 
 -- =====================================================================
---  22. ai_knowledge  (base de conhecimento treinável da Lorena)
+--  22. ai_knowledge  (base de conhecimento treinável do Bento)
 -- =====================================================================
 create table if not exists public.ai_knowledge (
   id uuid primary key default gen_random_uuid(),

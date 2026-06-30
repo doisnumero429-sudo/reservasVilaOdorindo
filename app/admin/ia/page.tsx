@@ -77,7 +77,7 @@ export default function IaPage() {
     flash('Configurações salvas.');
   }
 
-  async function testarLorena() {
+  async function testarBento() {
     if (!teste.trim()) return;
     setResposta('Pensando...');
     const r = await fetch('/api/ai/chat', {
@@ -95,7 +95,7 @@ export default function IaPage() {
 
   return (
     <AdminShell>
-      <h1 className="adm-h1">IA (Lorena)</h1>
+      <h1 className="adm-h1">IA (Bento)</h1>
       <p className="adm-sub">A chave da OpenRouter fica só no servidor. O cliente nunca a vê.</p>
       {msg && <div className="adm-msg ok">{msg}</div>}
 
@@ -181,10 +181,10 @@ export default function IaPage() {
       </div>
 
       <div className="adm-card" style={{ marginTop: 16 }}>
-        <h2>Testar Lorena</h2>
+        <h2>Testar Bento</h2>
         <div className="adm-row">
           <input className="adm-input" style={{ maxWidth: 360 }} placeholder="Digite uma pergunta de cliente" value={teste} onChange={(e) => setTeste(e.target.value)} />
-          <button className="adm-btn" onClick={testarLorena}>
+          <button className="adm-btn" onClick={testarBento}>
             Enviar
           </button>
         </div>
@@ -192,10 +192,10 @@ export default function IaPage() {
       </div>
 
       <div className="adm-card" style={{ marginTop: 16 }}>
-        <h2>Base de conhecimento (treine a Lorena)</h2>
+        <h2>Base de conhecimento (treine o Bento)</h2>
         <p className="adm-sub" style={{ marginTop: -4 }}>
           Adicione perguntas e respostas próprias (estacionamento, formas de pagamento, pet friendly...).
-          A Lorena usa estas respostas oficiais. As <b>palavras-chave</b> (separadas por vírgula) fazem ela
+          O Bento usa estas respostas oficiais. As <b>palavras-chave</b> (separadas por vírgula) fazem ela
           responder na hora, sem custo de IA, quando o cliente usa essas palavras.
         </p>
         <div className="adm-card" style={{ background: '#0b0907' }}>

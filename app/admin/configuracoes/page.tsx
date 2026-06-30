@@ -115,7 +115,7 @@ export default function ConfiguracoesPage() {
             </div>
           ))}
         </div>
-        <label className="adm-label">Link do cardápio / delivery (Goomer) — a Lorena indica este link para pedidos</label>
+        <label className="adm-label">Link do cardápio / delivery (Goomer) — o Bento indica este link para pedidos</label>
         <input className="adm-input" value={deliveryUrl} onChange={(e) => setDeliveryUrl(e.target.value)} placeholder="https://villa-grill-restaurante.goomer.app/" />
         <div style={{ marginTop: 14 }}>
           <button className="adm-btn gold" onClick={salvarUnidade}>Salvar dados da unidade</button>

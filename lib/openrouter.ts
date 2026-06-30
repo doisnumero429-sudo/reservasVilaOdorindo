@@ -31,7 +31,7 @@ async function callOpenRouter(
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
         'HTTP-Referer': process.env.OPENROUTER_SITE_URL || 'http://localhost:3000',
-        'X-Title': process.env.OPENROUTER_APP_NAME || 'Villa Grill - Lorena',
+        'X-Title': process.env.OPENROUTER_APP_NAME || 'Villa Grill - Bento',
       },
       body: JSON.stringify({
         model,

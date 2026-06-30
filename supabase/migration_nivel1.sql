@@ -1,5 +1,5 @@
 -- =====================================================================
---  VILLA GRILL — Migração "Nível 1" da Lorena
+--  VILLA GRILL — Migração "Nível 1" do Bento
 --  Rode no SQL Editor do Supabase (depois do schema.sql).
 --  Cria o cache de respostas da IA (economiza requisições/custo).
 --  Pode rodar de novo sem problema.

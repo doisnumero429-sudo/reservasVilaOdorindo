@@ -13,7 +13,7 @@ function norm(s: string) {
 }
 
 /**
- * POST /api/ai/chat  — Lorena (site).
+ * POST /api/ai/chat  — Bento (site).
  * Faz: busca inteligente no cardápio, consciência de bloqueios/eventos, RESERVA
  * POR CONVERSA, cache (economia) e proteção de limite. A chave fica só no servidor.
  */
@@ -176,10 +176,10 @@ export async function POST(req: NextRequest) {
 
     const baseInstrucoes =
       (ai?.system_prompt && ai.system_prompt.trim()) ||
-      `Você é a Lorena, atendente virtual do ${restaurant.name}. Você conhece o cardápio a fundo e ADORA ajudar o cliente a escolher e comer bem.
+      `Você é o Bento, atendente virtual do ${restaurant.name}. Você conhece o cardápio a fundo e ADORA ajudar o cliente a escolher e comer bem.
 
 COMO VOCÊ FALA:
-- Calorosa, simpática e natural, como uma ótima atendente brasileira. Use emoji com leveza (🔥😋👏).
+- Caloroso, simpático e natural, como um ótimo atendente brasileiro. Use emoji com leveza (🔥😋👏).
 - Quando falar de um prato, DEMONSTRE conhecimento: descreva o prato com vontade, diga o que ACOMPANHA, a PORÇÃO (quantas pessoas serve) e o PREÇO. Faça dar água na boca.
 - Pode escrever 1 a 2 parágrafos quando o assunto pedir — NÃO precisa ser curta demais. Riqueza e calor humano são bem-vindos.
 - Foque no que a pessoa pediu, mas ofereça sugestões e acompanhamentos. Conduza a conversa, ajude a decidir.
@@ -257,7 +257,7 @@ ${cardapioTxt}`;
       .trim();
 
     // ---- TRAVA ANTI-PREÇO-INVENTADO ----
-    // Se a Lorena citar um valor que NÃO existe no cardápio, é alucinação: avisamos.
+    // Se o Bento citar um valor que NÃO existe no cardápio, é alucinação: avisamos.
     let precoInventado = false;
     if (precosValidos.size) {
       const matches = reply.match(/R\$\s?\d{1,4}(?:[.,]\d{2})?/g) || [];

@@ -1,5 +1,5 @@
 -- =====================================================================
---  VILLA GRILL — Migração "Nível 3" da Lorena
+--  VILLA GRILL — Migração "Nível 3" do Bento
 --  Rode no SQL Editor do Supabase (depois do schema.sql).
 --  Cria a base de conhecimento (FAQ treinável) e o feedback das respostas.
 --  Pode rodar de novo sem problema.
@@ -23,7 +23,7 @@ drop policy if exists "admin_all_ai_knowledge" on public.ai_knowledge;
 create policy "admin_all_ai_knowledge" on public.ai_knowledge
   for all using (public.is_admin(restaurant_id)) with check (public.is_admin(restaurant_id));
 
--- Feedback (👍/👎) das respostas da Lorena.
+-- Feedback (👍/👎) das respostas do Bento.
 alter table public.ai_logs add column if not exists feedback text;
 
 -- Fim.

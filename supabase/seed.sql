@@ -58,7 +58,7 @@ begin
   select rid, 'Villa Grill'
   where not exists (select 1 from public.email_settings where restaurant_id = rid);
 
-  -- ---- 5. Configurações da IA (Lorena) — cascata GRÁTIS-PRIMEIRO ------
+  -- ---- 5. Configurações da IA (Bento) — cascata GRÁTIS-PRIMEIRO ------
   -- Etapa 1: modelo GRÁTIS da OpenRouter (:free). Etapas 2/3: pagos (só se o
   -- grátis falhar). 'cheap_model' abaixo é grátis; confirme o nome na lista
   -- atual em openrouter.ai/models (filtro :free) e ajuste em /admin/ia se preciso.

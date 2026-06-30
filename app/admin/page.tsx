@@ -54,7 +54,7 @@ export default function DashboardPage() {
         <div className="adm-row">
           <a className="adm-btn" href="/admin/reservas">Ver reservas</a>
           <a className="adm-btn" href="/admin/emails">E-mails e Alertas</a>
-          <a className="adm-btn" href="/admin/ia">Configurar Lorena</a>
+          <a className="adm-btn" href="/admin/ia">Configurar Bento</a>
         </div>
       </div>
     </AdminShell>

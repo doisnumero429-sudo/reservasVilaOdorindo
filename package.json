@@ -2,7 +2,7 @@
   "name": "reservas-villa-odorindo",
   "version": "1.0.0",
   "private": true,
-  "description": "Site Villa Grill / Lorena — site público preservado + administrador separado, Supabase, e-mails, IA via OpenRouter.",
+  "description": "Site Villa Grill / Bento — site público preservado + administrador separado, Supabase, e-mails, IA via OpenRouter.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

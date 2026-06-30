@@ -49,7 +49,7 @@ export default function LogsPage() {
   return (
     <AdminShell>
       <h1 className="adm-h1">Logs e Métricas</h1>
-      <p className="adm-sub">Desempenho da Lorena, histórico de e-mails, conversas e alterações.</p>
+      <p className="adm-sub">Desempenho do Bento, histórico de e-mails, conversas e alterações.</p>
 
       {met && (
         <>
@@ -69,7 +69,7 @@ export default function LogsPage() {
               )}
             </div>
             <div className="adm-card">
-              <h2>Onde a Lorena não soube</h2>
+              <h2>Onde o Bento não soube</h2>
               {met.naoSoube.length === 0 ? <p className="adm-sub">Nenhuma — ótimo sinal! 🎉</p> : (
                 <ul className="adm-sub" style={{ lineHeight: 1.8 }}>
                   {met.naoSoube.map((q: string, i: number) => <li key={i}>{q}</li>)}
@@ -86,7 +86,7 @@ export default function LogsPage() {
             E-mails
           </button>
           <button className={`adm-btn sm ${aba === 'ia' ? 'gold' : ''}`} onClick={() => setAba('ia')}>
-            IA (Lorena)
+            IA (Bento)
           </button>
           <button className={`adm-btn sm ${aba === 'auditoria' ? 'gold' : ''}`} onClick={() => setAba('auditoria')}>
             Auditoria

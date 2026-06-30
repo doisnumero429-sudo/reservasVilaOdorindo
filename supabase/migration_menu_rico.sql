@@ -493,7 +493,7 @@ begin
     where mi.category_id = mc.id and mc.restaurant_id = rid
       and mc.name = 'Aperitivos da Brasa' and mi.name = 'Panceta na Brasa Aperitivo' and mi.variation is null;
 
-  -- deixa a Lorena mais 'falante' (respostas mais ricas)
+  -- deixa o Bento mais 'falante' (respostas mais ricas)
   update public.ai_settings set max_tokens = 700
     where restaurant_id = rid and max_tokens < 700;
 

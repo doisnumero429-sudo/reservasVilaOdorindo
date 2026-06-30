@@ -19,7 +19,7 @@
 3. **Site público preservado** em `public/site/index.html` — mesmo HTML/CSS/JS, com:
    - removido o botão "Administrador", a engrenagem da chave de IA e o painel admin;
    - reserva religada ao backend `POST /api/reservations`;
-   - chat da Lorena religado ao backend `POST /api/ai/chat` (chave só no servidor).
+   - chat do Bento religado ao backend `POST /api/ai/chat` (chave só no servidor).
 4. **Banco Supabase**: `supabase/schema.sql` (20 tabelas + RLS + políticas) e
    `supabase/seed.sql` (restaurante, regras, setores, templates, IA, impressão).
 5. **Admin separado e protegido** (`/admin/login`, `/admin`, middleware de proteção):
@@ -27,7 +27,7 @@
      não respondeu, lista de espera, mesas, WhatsApp — lendo/gravando no Supabase.
    - **E-mails e Alertas** (`/admin/emails`): destinatários, ativar/desativar, testes,
      relatório diário e remetente técnico.
-   - **IA (Lorena)** (`/admin/ia`): liga/desliga, modo, cascata de modelos, parâmetros,
+   - **IA (Bento)** (`/admin/ia`): liga/desliga, modo, cascata de modelos, parâmetros,
      mensagens e teste.
    - **Reclamações** e **Logs** (e-mail/IA/auditoria) funcionais.
    - Demais telas (bloqueios, eventos, configurações, personalização, impressão,

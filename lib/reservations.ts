@@ -26,7 +26,7 @@ export type NovaReservaResult = {
 /**
  * Cria uma pré-reserva (status 'pending'), validando regras, bloqueios e setor,
  * registrando histórico e disparando o e-mail. Usada tanto pela rota pública
- * /api/reservations quanto pela Lorena (reserva por conversa).
+ * /api/reservations quanto pelo Bento (reserva por conversa).
  * NUNCA confirma automaticamente.
  */
 export async function createReservation(input: NovaReservaInput): Promise<NovaReservaResult> {

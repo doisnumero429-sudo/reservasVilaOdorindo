@@ -8,7 +8,7 @@ function norm(s: string) {
 }
 
 /**
- * Monta o contexto do cardápio para a Lorena.
+ * Monta o contexto do cardápio para o Bento.
  * ESTRATÉGIA: envia o CARDÁPIO COMPLETO (todos os itens + preço), agrupado por categoria,
  * para ela NUNCA inventar nem omitir item. Além disso, destaca os DETALHES ricos
  * (descrição, acompanhamentos, porção) dos itens mais relevantes à pergunta.

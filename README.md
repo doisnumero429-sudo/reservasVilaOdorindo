@@ -2,7 +2,7 @@
 
 Site público do Villa Grill (visual preservado) **+** um administrador separado e
 protegido, com banco de dados (Supabase), e-mails automáticos, relatório diário e a
-assistente **Lorena** rodando com segurança no servidor (IA via OpenRouter).
+assistente **Bento** rodando com segurança no servidor (IA via OpenRouter).
 
 > Este guia é escrito para **quem não é programador**. Siga na ordem.
 
@@ -53,7 +53,7 @@ Abra `http://localhost:3000` (site) e `http://localhost:3000/admin/login` (admin
 3. Faça o mesmo com `supabase/seed.sql` (dados iniciais do Villa Grill). Clique **Run**.
 4. (Opcional, recomendado) Faça o mesmo com `supabase/seed_menu.sql` para já trazer
    **todo o cardápio** (383 itens) para o banco. Clique **Run**.
-5. Rode `supabase/migration_nivel1.sql` (cria o cache da Lorena — economia de IA). **Run**.
+5. Rode `supabase/migration_nivel1.sql` (cria o cache do Bento — economia de IA). **Run**.
    Em seguida rode `supabase/migration_nivel3.sql` (base de conhecimento + feedback). **Run**.
    E `supabase/migration_menu_rico.sql` (completa o cardápio com acompanhamentos, porção e destaques). **Run**.
 6. (Opcional) Para usar o **upload de imagens** (tela Personalização), rode também
@@ -148,11 +148,11 @@ Em **E-mails e Alertas**, clique **Enviar teste**. Se chegar na caixa, está fun
 
 ---
 
-## 9. Configurar a IA (Lorena) com OpenRouter
+## 9. Configurar a IA (Bento) com OpenRouter
 
 1. Crie conta em <https://openrouter.ai> → **Keys** → crie uma chave → coloque em
    `OPENROUTER_API_KEY`. **A chave fica só no servidor** — o cliente nunca a vê.
-2. No painel → **IA (Lorena)** (`/admin/ia`):
+2. No painel → **IA (Bento)** (`/admin/ia`):
    - Ligue/desligue a IA e escolha o **modo** (regras locais / híbrido / OpenRouter).
    - **Cascata de modelos**: do mais barato ao mais forte. Use nomes da OpenRouter, ex.:
      - Barato: `openai/gpt-4o-mini`
@@ -160,7 +160,7 @@ Em **E-mails e Alertas**, clique **Enviar teste**. Se chegar na caixa, está fun
      - Forte: `openai/gpt-4o`
    - A lógica tenta **primeiro o mais barato**; só sobe se precisar. Se tudo falhar,
      responde a mensagem de **fallback** (encaminhar para humano).
-3. **Testar Lorena**: na mesma tela há um campo para você digitar uma pergunta e ver a
+3. **Testar Bento**: na mesma tela há um campo para você digitar uma pergunta e ver a
    resposta (e qual etapa/modelo respondeu).
 
 ---
@@ -184,7 +184,7 @@ Em **E-mails e Alertas**, clique **Enviar teste**. Se chegar na caixa, está fun
 - [ ] Confirmar/cancelar a reserva no admin.
 - [ ] Receber o e-mail de nova reserva (se cadastrou destinatário).
 - [ ] **Enviar teste** de e-mail funciona.
-- [ ] **Testar Lorena** responde (e a chave não aparece no navegador).
+- [ ] **Testar Bento** responde (e a chave não aparece no navegador).
 - [ ] **Enviar relatório de teste** funciona.
 
 ---

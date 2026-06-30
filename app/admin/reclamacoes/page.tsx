@@ -29,7 +29,7 @@ export default function ReclamacoesPage() {
   return (
     <AdminShell>
       <h1 className="adm-h1">Reclamações</h1>
-      <p className="adm-sub">Relatos que a Lorena acolheu. A equipe é avisada por e-mail.</p>
+      <p className="adm-sub">Relatos que o Bento acolheu. A equipe é avisada por e-mail.</p>
       <div className="adm-card">
         {lista.length === 0 ? (
           <p className="adm-sub">Nenhuma reclamação registrada.</p>

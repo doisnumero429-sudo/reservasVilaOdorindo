@@ -20,9 +20,9 @@ de programação — é só copiar e colar.
 | `NEXT_PUBLIC_SUPABASE_URL` | Endereço do banco | Supabase → ⚙️ Project Settings → API → **Project URL** |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Chave pública (segura) do banco | Mesma página → chave **anon public** |
 | `SUPABASE_SERVICE_ROLE_KEY` | Chave mestra secreta (só servidor) | Mesma página → chave **service_role** |
-| `OPENROUTER_API_KEY` | Inteligência da Lorena (IA) | openrouter.ai → **Keys** → Create Key |
+| `OPENROUTER_API_KEY` | Inteligência do Bento (IA) | openrouter.ai → **Keys** → Create Key |
 | `OPENROUTER_SITE_URL` | Identifica seu site na OpenRouter | É o seu `APP_URL` |
-| `OPENROUTER_APP_NAME` | Nome do app na OpenRouter | Você inventa: `Villa Grill - Lorena` |
+| `OPENROUTER_APP_NAME` | Nome do app na OpenRouter | Você inventa: `Villa Grill - Bento` |
 | `RESEND_API_KEY` | Autoriza o envio de e-mails | resend.com → **API Keys** → Create |
 | `EMAIL_FROM` | Endereço que aparece no "De:" | Teste: `onboarding@resend.dev` / Produção: e-mail de domínio verificado |
 | `EMAIL_FROM_NAME` | Nome no remetente | Você inventa: `Villa Grill` |
@@ -51,7 +51,7 @@ de programação — é só copiar e colar.
 | **Vercel** (site) | **Grátis** no Hobby; Pro (~US$ 20/mês) pode ser exigido por ser uso comercial |
 | **OpenRouter** (IA) | **Pago por uso** — recarregue ~US$ 5–10 e dura bastante. Modelos baratos custam centavos por milhares de conversas. |
 
-**Dica para gastar zero com IA no começo:** a Lorena já vem configurada no **modo grátis
+**Dica para gastar zero com IA no começo:** o Bento já vem configurada no **modo grátis
 (regras locais)**. Ela responde com o cardápio e as regras cadastradas, sem custo. Quando
 quiser deixá-la mais "conversadora", entre em `/admin/ia`, troque o modo para **híbrido**
 ou **OpenRouter** e informe os modelos da cascata.

@@ -59,7 +59,7 @@ export default function EventosPage() {
         </div>
         <label className="adm-label">Mensagem pública (aviso no site)</label>
         <textarea className="adm-textarea" value={form.public_message} onChange={(e) => setForm({ ...form, public_message: e.target.value })} />
-        <label className="adm-label">Mensagem da Lorena (o que ela fala sobre o evento)</label>
+        <label className="adm-label">Mensagem do Bento (o que ela fala sobre o evento)</label>
         <textarea className="adm-textarea" value={form.assistant_message} onChange={(e) => setForm({ ...form, assistant_message: e.target.value })} />
         <div className="adm-row">
           <label><input type="checkbox" checked={form.show_public_notice} onChange={(e) => setForm({ ...form, show_public_notice: e.target.checked })} /> Mostrar aviso no site</label>

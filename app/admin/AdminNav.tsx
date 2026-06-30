@@ -13,7 +13,7 @@ const LINKS = [
   ['/admin/eventos', 'Eventos'],
   ['/admin/cardapio', 'Cardápio'],
   ['/admin/emails', 'E-mails e Alertas'],
-  ['/admin/ia', 'IA (Lorena)'],
+  ['/admin/ia', 'IA (Bento)'],
   ['/admin/cerebro', 'Cérebro do Bento'],
   ['/admin/impressao', 'Impressão'],
   ['/admin/configuracoes', 'Configurações'],
