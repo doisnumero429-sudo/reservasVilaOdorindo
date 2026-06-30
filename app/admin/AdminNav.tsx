@@ -14,6 +14,7 @@ const LINKS = [
   ['/admin/cardapio', 'Cardápio'],
   ['/admin/emails', 'E-mails e Alertas'],
   ['/admin/ia', 'IA (Lorena)'],
+  ['/admin/cerebro', 'Cérebro do Bento'],
   ['/admin/impressao', 'Impressão'],
   ['/admin/configuracoes', 'Configurações'],
   ['/admin/personalizacao', 'Personalização'],

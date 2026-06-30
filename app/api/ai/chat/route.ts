@@ -4,6 +4,7 @@ import { cascadeChat, ChatMessage } from '@/lib/openrouter';
 import { buildMenuContext } from '@/lib/menu-context';
 import { stepFeedback, confirmSummary, detectFeedbackIntent, bentoClosingMessage, buildWhatsappMessage, buildSummary } from '@/lib/feedback-engine';
 import { registerFeedback } from '@/lib/feedback-persist';
+import { getActiveBrain } from '@/lib/brain';
 
 export const runtime = 'nodejs';
 
@@ -39,6 +40,8 @@ export async function POST(req: NextRequest) {
     const fbSession = body.feedbackSession || null;
     const action = body.action || null;
     const waOficial = (restaurant.whatsapp_number || '').replace(/\D/g, '');
+    const brain = await getActiveBrain(db, restaurant.id); // "Cérebro do Bento" (editável)
+    const brainTriggers: string[] = brain?.feedback_triggers || [];
 
     if (action === 'register' && fbSession) {
       const res = await registerFeedback(restaurant.id, fbSession, 'bento');
@@ -58,7 +61,7 @@ export async function POST(req: NextRequest) {
     if (action === 'correct' && fbSession) {
       return NextResponse.json({ ok: true, feedback: true, reply: 'Claro. Me fala o que você quer corrigir que eu ajusto antes de enviar.', ui: {}, feedbackSession: { ...fbSession, stage: 'await_confirm' } });
     }
-    if ((fbSession && fbSession.active) || detectFeedbackIntent(userMessage)) {
+    if ((fbSession && fbSession.active) || detectFeedbackIntent(userMessage, brainTriggers)) {
       const r = stepFeedback(fbSession && fbSession.active ? fbSession : null, userMessage, { uploadsEnabled: false });
       // Ao chegar no resumo, lapida o relato (português correto, fiel, sem inventar).
       if (r.ui?.summaryText) {
@@ -216,8 +219,20 @@ ${eventosTxt}
 ${faqTxt ? `\nBASE DE CONHECIMENTO DA CASA (use estas respostas oficiais quando couber):\n${faqTxt}\n` : ''}
 ${cardapioTxt}`;
 
+    // Extras vindos do "Cérebro do Bento" (editável via exportar/importar)
+    let brainExtra = '';
+    if (brain) {
+      const p = brain.persona || ({} as any);
+      const partes: string[] = [];
+      if (p.tone) partes.push(`TOM: ${p.tone}`);
+      if (Array.isArray(p.rules) && p.rules.length) partes.push('REGRAS DA CASA:\n- ' + p.rules.join('\n- '));
+      if (Array.isArray(brain.policies) && brain.policies.length) partes.push('POLÍTICAS:\n- ' + brain.policies.join('\n- '));
+      if (brain.system_prompt_extra) partes.push(brain.system_prompt_extra);
+      brainExtra = partes.join('\n');
+    }
+
     const messages: ChatMessage[] = [
-      { role: 'system', content: baseInstrucoes + '\n' + comportamento + '\n' + instrucaoReserva },
+      { role: 'system', content: baseInstrucoes + '\n' + comportamento + '\n' + instrucaoReserva + (brainExtra ? '\n' + brainExtra : '') },
       { role: 'system', content: contexto },
       ...incoming.slice(-12),
     ];

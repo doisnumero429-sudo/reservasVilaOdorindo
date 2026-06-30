@@ -97,9 +97,10 @@ const TRIGGERS = [
   'deixar uma observacao', 'quero falar com o responsavel',
 ];
 
-export function detectFeedbackIntent(text: string): boolean {
+export function detectFeedbackIntent(text: string, extraTriggers: string[] = []): boolean {
   const q = norm(text);
-  return TRIGGERS.some((t) => q.includes(t));
+  if (TRIGGERS.some((t) => q.includes(t))) return true;
+  return extraTriggers.some((t) => t && q.includes(norm(t)));
 }
 
 /* --------------------- 2) Categorias (pacotes por nicho) --------------------- */
